@@ -1,5 +1,5 @@
-// chatbot.js
 document.addEventListener('DOMContentLoaded', function() {
+    
     const chatToggle = document.getElementById('chat-toggle');
     const chatContainer = document.getElementById('chat-container');
     const userInput = document.getElementById('user-input');
@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
     chatToggle.addEventListener('click', function() {
         chatContainer.style.display = 'flex';
         chatToggle.style.display = 'none';
+        userInput.focus(); // Focus on the input field when chat opens
     });
 
     sendButton.addEventListener('click', sendMessage);
@@ -22,20 +23,42 @@ document.addEventListener('DOMContentLoaded', function() {
     function sendMessage() {
         const message = userInput.value.trim();
         if (message) {
-            const userDiv = document.createElement('div');
-            userDiv.textContent = 'You: ' + message;
-            userDiv.classList.add('user-message');
-            messageWindow.appendChild(userDiv);
-
-            // Here you would send the message to the server and get a response
-            // For now, let's just echo the user message
-            const botDiv = document.createElement('div');
-            botDiv.textContent = 'Bot: ' + message;
-            botDiv.classList.add('bot-message');
-            messageWindow.appendChild(botDiv);
-
+            displayUserMessage(message);
             userInput.value = '';
-            messageWindow.scrollTop = messageWindow.scrollHeight; // Scroll to the bottom
+            userInput.disabled = true; // Disable input during request
+
+            $.ajax({
+                type: 'POST',
+                url: '/chatbot', // Update to match the route in your Flask app
+                contentType: 'application/json',
+                data: JSON.stringify({ message: message }),
+                success: function(response) {
+                    displayBotMessage(response.response);
+                    userInput.disabled = false; // Re-enable input
+                    userInput.focus(); // Focus back on the input field
+                },
+                error: function() {
+                    displayBotMessage("Sorry, I am having trouble responding right now.");
+                    userInput.disabled = false; // Re-enable input
+                }
+            });
         }
     }
+
+    function displayUserMessage(message) {
+        const userDiv = document.createElement('div');
+        userDiv.textContent = message;
+        userDiv.classList.add('user-message');
+        messageWindow.appendChild(userDiv);
+        messageWindow.scrollTop = messageWindow.scrollHeight; // Scroll to the bottom
+    }
+
+    function displayBotMessage(message) {
+        const botDiv = document.createElement('div');
+        botDiv.textContent =  message;
+        botDiv.classList.add('bot-message');
+        messageWindow.appendChild(botDiv);
+        messageWindow.scrollTop = messageWindow.scrollHeight; // Scroll to the bottom
+    }
+    
 });

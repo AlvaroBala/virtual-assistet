@@ -4,11 +4,11 @@ from mysql.connector import Error
 
 app = Flask(__name__)
 
-# Replace these with your MySQL database details
+# MySQL database details
 db_config = {
     'host': 'localhost',
     'user': 'root',
-    'password': '',
+    'password': 'password',
     'database': 'virtual_assistant'
 }
 
@@ -30,21 +30,46 @@ def index():
 @app.route('/chatbot', methods=['POST'])
 def chatbot():
     user_message = request.json['message']
-    response = get_response_from_db(user_message)
-    if not response:
-        response = "I'm not sure how to answer that. Let's try searching for a professional."
+    response = get_response(user_message)
     return jsonify({'response': response})
 
-def get_response_from_db(user_message):
+# Function to get a response from the database
+def get_response(user_message):
     conn = get_db_connection()
-    response = None
-    if conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT answer FROM faqs WHERE question LIKE %s LIMIT 1", (f"%{user_message}%",))
-        answer = cursor.fetchone()
-        response = answer[0] if answer else None
+    if not conn:
+        return "I'm currently unable to connect to the database."
+
+    try:
+        response = get_response_from_db(conn, user_message)
+        if not response:
+            response = get_response_from_keywords(conn, user_message)
+        return response if response else "I'm not sure how to answer that. Let's try searching for a professional."
+    finally:
         conn.close()
-    return response
+
+def get_response_from_db(conn, user_message):
+    cursor = conn.cursor()
+    query = "SELECT answer FROM faqs WHERE question LIKE %s LIMIT 1"
+    cursor.execute(query, (f"%{user_message}%",))
+    answer = cursor.fetchone()
+    return answer[0] if answer else None
+
+def get_response_from_keywords(conn, user_message):
+    keywords = user_message.split()
+    cursor = conn.cursor()
+    for keyword in keywords:
+        query = """
+        SELECT faqs.answer
+        FROM faq_keywords
+        JOIN faqs ON faqs.id = faq_keywords.faq_id
+        WHERE faq_keywords.keyword LIKE %s
+        LIMIT 1
+        """
+        cursor.execute(query, (f"%{keyword}%",))
+        answer = cursor.fetchone()
+        if answer:
+            return answer[0]
+    return None
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(port=5000)
