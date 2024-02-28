@@ -84,3 +84,21 @@
 #chat-container.open + #chat-toggle {
     display: none;
 }
+#close-btn {
+    float: right;
+    cursor: pointer;
+    padding: 0 10px;
+    font-size: 18px;
+    line-height: 24px;
+}
+#close-btn {
+    float: right;
+    cursor: pointer;
+    padding: 0 10px;
+    font-size: 18px;
+    line-height: 24px;
+}
+/* Initially hide the chat container */
+#chat-container {
+    display: none;
+}
