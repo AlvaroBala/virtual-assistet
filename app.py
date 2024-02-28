@@ -1,8 +1,12 @@
 from flask import Flask, request, jsonify, render_template
 import mysql.connector
 from mysql.connector import Error
+import spacy
 
 app = Flask(__name__)
+
+# Load spaCy model
+nlp = spacy.load("en_core_web_sm")
 
 # MySQL database details
 db_config = {
@@ -35,41 +39,35 @@ def chatbot():
 
 # Function to get a response from the database
 def get_response(user_message):
+    # Process the message with spaCy
+    doc = nlp(user_message)
+    # Extract keywords (could be nouns, verbs, or named entities)
+    keywords = [token.text for token in doc if token.is_alpha and not token.is_stop]
+    
+    # Connect to the database
     conn = get_db_connection()
     if not conn:
         return "I'm currently unable to connect to the database."
 
     try:
-        response = get_response_from_db(conn, user_message)
-        if not response:
-            response = get_response_from_keywords(conn, user_message)
+        # Try getting a response using spaCy extracted keywords
+        response = get_response_from_keywords(conn, keywords)
         return response if response else "I'm not sure how to answer that. Let's try searching for a professional."
     finally:
         conn.close()
 
-def get_response_from_db(conn, user_message):
+def get_response_from_keywords(conn, keywords):
     cursor = conn.cursor()
-    query = "SELECT answer FROM faqs WHERE question LIKE %s LIMIT 1"
-    cursor.execute(query, (f"%{user_message}%",))
+    # Modify your query to search for all keywords
+    query = """
+    SELECT faqs.answer
+    FROM faq_keywords
+    JOIN faqs ON faqs.id = faq_keywords.faq_id
+    WHERE """
+    query += ' OR '.join(f"faq_keywords.keyword LIKE %s" for _ in keywords)
+    cursor.execute(query, tuple(f"%{keyword}%" for keyword in keywords))
     answer = cursor.fetchone()
     return answer[0] if answer else None
-
-def get_response_from_keywords(conn, user_message):
-    keywords = user_message.split()
-    cursor = conn.cursor()
-    for keyword in keywords:
-        query = """
-        SELECT faqs.answer
-        FROM faq_keywords
-        JOIN faqs ON faqs.id = faq_keywords.faq_id
-        WHERE faq_keywords.keyword LIKE %s
-        LIMIT 1
-        """
-        cursor.execute(query, (f"%{keyword}%",))
-        answer = cursor.fetchone()
-        if answer:
-            return answer[0]
-    return None
 
 if __name__ == '__main__':
     app.run(port=5000)

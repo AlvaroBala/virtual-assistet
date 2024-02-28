@@ -4,18 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Virtual Assistant Chatbot</title>
-    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='chatbot.css') }}">
-    <script type="text/javascript" src="{{url_for('static', filename='chatbot.js')}}"></script>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='chatbot.css') }}">
 </head>
 <body>
 
-    <!-- Chat container, initially hidden -->
+    <!-- Chat container -->
     <div id="chat-container">
         <!-- Chat header -->
         <div id="chat-header">Virtual Assistant</div>
         
         <!-- Message window for displaying chat messages -->
         <div id="message-window"></div>
+        
+        <!-- Loading Spinner -->
+        <div id="loading-spinner" style="display: none;">Loading...</div>
         
         <!-- User input container -->
         <div id="user-input-container">
@@ -27,9 +29,8 @@
     <!-- Button to toggle the chat window -->
     <button id="chat-toggle">Chat with Us!</button>
 
-    <!-- Including jQuery for AJAX requests -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- Including the separate JavaScript file for chatbot functionality -->
+    <script type="text/javascript" src="{{url_for('static', filename='chatbot.js')}}"></script>
 
 </body>
 </html>
