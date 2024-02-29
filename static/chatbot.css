@@ -102,3 +102,156 @@
 #chat-container {
     display: none;
 }
+#chat-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 350px;
+    background: #f8f9fa; /* Light grey background for a modern look */
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Slightly darker shadow for better depth */
+    display: none; /* Keep it hidden initially */
+    flex-direction: column;
+    font-family: 'Helvetica Neue', Arial, sans-serif; /* Use Helvetica Neue if available */
+}
+
+#chat-header {
+    background: #0056b3; /* Slightly darker blue for contrast */
+    color: #ffffff;
+    padding: 15px 20px; /* More padding for a spacious header */
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    display: flex; /* Use flexbox for alignment */
+    justify-content: space-between; /* Space between title and close button */
+    align-items: center; /* Center items vertically */
+    font-size: 18px; /* Larger font size for the header */
+}
+
+#close-btn {
+    cursor: pointer;
+    color: #ffffff; /* White color for the button */
+    font-size: 24px; /* Larger close button */
+    opacity: 0.8; /* Slightly transparent for a subtle look */
+}
+
+#close-btn:hover {
+    opacity: 1; /* Full color on hover for feedback */
+}
+
+#message-window {
+    height: 300px; /* Increased height */
+    overflow-y: auto;
+    padding: 20px; /* More padding for spacious feeling */
+    background-color: #ffffff; /* White background for a clean look */
+    font-size: 14px; /* Standard font size for messages */
+}
+
+#message-window > div {
+    background-color: #e9ecef; /* Neutral color for messages */
+    padding: 12px 15px; /* Adjust padding for messages */
+    border-radius: 20px; /* Rounded corners for message bubbles */
+    margin-bottom: 10px;
+    max-width: 80%;
+    word-wrap: break-word;
+}
+
+#message-window > div.bot-message {
+    background-color: #0056b3; /* Match the header color */
+    color: #ffffff;
+    align-self: flex-start;
+}
+
+#user-input-container {
+    padding: 10px 20px;
+    background: #f8f9fa; /* Match the chat container background */
+    border-top: 2px solid #ddd; /* Slightly thicker border for separation */
+    display: flex;
+}
+
+#user-input {
+    flex-grow: 1;
+    padding: 10px;
+    margin-right: 10px;
+    border: 1px solid #ced4da; /* Softer border color */
+    border-radius: 20px; /* Rounded corners for the input */
+    font-size: 14px;
+}
+
+#send-button {
+    background: #28a745; /* A green color for the send button */
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 20px; /* Rounded corners for the button */
+    cursor: pointer;
+    transition: background-color 0.3s; /* Smooth transition for hover effect */
+}
+
+#send-button:hover {
+    background-color: #218838; /* A darker green on hover */
+}
+
+#chat-toggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #007bff; /* Use the primary blue color */
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Consistent shadow with the container */
+    transition: background-color 0.3s; /* Smooth transition for hover effect */
+}
+
+#chat-toggle:hover {
+    background-color: #0056b3; /* A darker blue on hover */
+}
+
+/* Hide the toggle button when the chat is open */
+#chat-container.open + #chat-toggle {
+    display: none;
+}
+/* Additional styles to adjust chat bubbles */
+#message-window > div.bot-message {
+    background-color: #007bff;
+    color: #fff;
+    margin-right: auto;
+    margin-left: 10px; /* Adjust this value as needed to move bot messages to the left */
+    max-width: 60%; /* Adjust the width of the bot messages */
+}
+
+#message-window > div.user-message {
+    background-color: #e7f5ff;
+    color: #333;
+    margin-left: auto;
+    margin-right: 10px; /* Adjust this value as needed to move user messages to the right */
+    max-width: 60%; /* Adjust the width of the user messages */
+    text-align: right; /* Align the text to the right for user messages */
+}
+#chat-toggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #0056b3; /* A shade of blue that stands out */
+    color: #ffffff;
+    padding: 15px 30px;
+    border-radius: 50px; /* Fully rounded edges */
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border: none; /* No border */
+    font-size: 16px;
+    font-weight: bold; /* Make the text bold */
+    transition: all 0.3s ease; /* Smooth transition for hover effects */
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2); /* Subtle text shadow for depth */
+}
+
+#chat-toggle:hover {
+    background-color: #0066cc; /* Slightly darker shade on hover */
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); /* Larger shadow on hover for a "lifted" effect */
+    transform: translateY(-2px); /* Slight move up on hover */
+}
+
+#chat-toggle:focus {
+    outline: none; /* Remove the outline on focus for a clean look */
+}

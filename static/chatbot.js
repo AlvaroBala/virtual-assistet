@@ -7,12 +7,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const messageWindow = document.getElementById('message-window');
     const closeBtn = document.getElementById('close-btn');
 
+    // Flag to track if the chat is opened for the first time
+    let isFirstTime = true;
+
     // Function to toggle the chat window
     function toggleChat() {
         if (chatContainer.style.display === 'none' || chatContainer.style.display === '') {
             chatContainer.style.display = 'flex';
             chatToggle.style.display = 'none';
             userInput.focus(); // Focus on input field when chat opens
+
+            // Display greeting message if it's the first time
+            if (isFirstTime) {
+                displayBotMessage("Hi, I'm your virtual assistant. How can I help you?");
+                isFirstTime = false;
+            }
         } else {
             chatContainer.style.display = 'none';
             chatToggle.style.display = 'block';
