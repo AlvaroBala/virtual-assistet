@@ -73,13 +73,21 @@ def get_response(user_message):
         conn.close()
 
 # Function to query the database based on the extracted keywords
-def get_response_from_keywords(conn, keywords):
+def get_response_from_keywords(conn, keywords, user_message):
     cursor = conn.cursor()
     answer_scores = defaultdict(int)
+    
+    # Calculate weight based on keyword position in user message
+    def calculate_weight(keyword):
+        try:
+            # Weight could be inverse of keyword start position
+            return 1 / (user_message.lower().index(keyword.lower()) + 1)
+        except ValueError:
+            return 0
 
     for keyword in keywords:
         query = """
-        SELECT f.id, f.answer
+        SELECT f.id, f.answer, fk.keyword
         FROM faqs f
         INNER JOIN faq_keywords fk ON f.id = fk.faq_id
         WHERE fk.keyword LIKE %s
@@ -87,10 +95,11 @@ def get_response_from_keywords(conn, keywords):
         like_keyword = f"%{keyword}%"
         cursor.execute(query, (like_keyword,))
         faq_entries = cursor.fetchall()
-
+        
         for entry in faq_entries:
-            faq_id, _ = entry
-            answer_scores[faq_id] += 1
+            faq_id, _, kw = entry
+            weight = calculate_weight(kw)
+            answer_scores[faq_id] += weight
 
     best_faq_id = max(answer_scores, key=answer_scores.get, default=None)
     if best_faq_id is not None:
@@ -100,7 +109,8 @@ def get_response_from_keywords(conn, keywords):
         if best_answer:
             return best_answer[0]
 
-    return "I'm not sure how to answer that. Can you please provide more details?"
+    return None
+
 
 if __name__ == '__main__':
     app.run(port=5000)
