@@ -255,3 +255,50 @@
 #chat-toggle:focus {
     outline: none; /* Remove the outline on focus for a clean look */
 }
+
+#chat-header {
+    display: flex;
+    align-items: center;
+}
+
+#bot-icon {
+    margin-right: 10px; /* Adjust the margin as needed */
+    width: 31px; /* Adjust width as needed */
+    height: 31px; /* Adjust height as needed */
+}
+
+#close-btn {
+    margin-left: auto; /* This will push the close button to the right */
+}
+.typing-indicator {
+    display: none; /* Hide by default and only show during typing */
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 5px;
+    margin-top: 15px; /* Add space between the last message and the typing indicator */
+}
+
+.typing-dot {
+    width: 8px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #007bff;
+    margin: 0 2px;
+    animation: typing-blink 1.4s infinite both;
+}
+
+/* Simple blink animation for typing dots */
+@keyframes typing-blink {
+    0%, 100% {
+        opacity: 0.2;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+
+/* This will hold the typing indicator and be toggled when needed */
+#typing-indicator-container {
+    display: none; /* Hidden by default */
+}

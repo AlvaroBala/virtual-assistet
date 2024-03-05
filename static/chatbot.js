@@ -7,6 +7,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const messageWindow = document.getElementById('message-window');
     const closeBtn = document.getElementById('close-btn');
 
+    // Create typing indicator container and dots
+    const typingIndicatorContainer = document.createElement('div');
+    typingIndicatorContainer.id = 'typing-indicator-container';
+    typingIndicatorContainer.className = 'typing-indicator';
+    for (let i = 0; i < 3; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'typing-dot';
+        typingIndicatorContainer.appendChild(dot);
+    }
+    messageWindow.appendChild(typingIndicatorContainer);
+
     // Flag to track if the chat is opened for the first time
     let isFirstTime = true;
 
@@ -16,11 +27,11 @@ document.addEventListener('DOMContentLoaded', function() {
             chatContainer.style.display = 'flex';
             chatToggle.style.display = 'none';
             userInput.focus(); // Focus on input field when chat opens
-
+    
             // Display greeting message if it's the first time
             if (isFirstTime) {
-                displayBotMessage("Hi, I'm your virtual assistant. How can I help you?");
-                isFirstTime = false;
+                displayBotMessage("Hello our conpany provides assistance with water leaks, AC, locksmithing and heater repairs what can we help you with.");
+                isFirstTime = false; // Set to false so it doesn't show again
             }
         } else {
             chatContainer.style.display = 'none';
@@ -32,6 +43,27 @@ document.addEventListener('DOMContentLoaded', function() {
     chatToggle.addEventListener('click', toggleChat);
     closeBtn.addEventListener('click', toggleChat);
 
+    // Function to display typing indicator
+    function showTypingIndicator() {
+        messageWindow.appendChild(typingIndicatorContainer);
+        typingIndicatorContainer.style.display = 'flex';
+        messageWindow.scrollTop = messageWindow.scrollHeight;
+    }
+
+    function hideTypingIndicator() {
+        typingIndicatorContainer.style.display = 'none';
+        if (typingIndicatorContainer.parentNode === messageWindow) {
+            messageWindow.removeChild(typingIndicatorContainer);
+        }
+    }
+
+    function handleBotResponse(response) {
+        hideTypingIndicator(); // Hide typing indicator
+        displayBotMessage(response.response);
+        userInput.disabled = false; // Re-enable input
+        userInput.focus(); // Refocus on the input field after message is sent
+    }
+
     // Function to send a message
     function sendMessage() {
         const message = userInput.value.trim();
@@ -39,24 +71,30 @@ document.addEventListener('DOMContentLoaded', function() {
             displayUserMessage(message);
             userInput.value = '';
             userInput.disabled = true; // Disable input during request
+            showTypingIndicator(); // Show typing indicator
 
-            // AJAX request to the server
-            $.ajax({
-                type: 'POST',
-                url: '/chatbot', // Update this URL to your server endpoint
-                contentType: 'application/json',
-                data: JSON.stringify({ message: message }),
-                success: function(response) {
-                    displayBotMessage(response.response);
-                    userInput.disabled = false; // Re-enable input
-                    userInput.focus(); // Refocus on the input field after message is sent
-                },
-                error: function() {
-                    displayBotMessage("Sorry, I am having trouble responding right now.");
-                    userInput.disabled = false; // Re-enable input
-                    userInput.focus(); // Refocus on the input field even if there's an error
-                }
-            });
+            // Simulate delay for bot response
+            setTimeout(() => {
+                // AJAX request to the server
+                $.ajax({
+                    type: 'POST',
+                    url: '/chatbot', // Update this URL to your server endpoint
+                    contentType: 'application/json',
+                    data: JSON.stringify({ message: message }),
+                    success: function(response) {
+                        hideTypingIndicator(); // Hide typing indicator
+                        displayBotMessage(response.response);
+                        userInput.disabled = false; // Re-enable input
+                        userInput.focus(); // Refocus on the input field after message is sent
+                    },
+                    error: function() {
+                        hideTypingIndicator(); // Hide typing indicator
+                        displayBotMessage("Sorry, I am having trouble responding right now.");
+                        userInput.disabled = false; // Re-enable input
+                        userInput.focus(); // Refocus on the input field even if there's an error
+                    }
+                });
+            }, 1500); // Adjust this delay to match your bot's average response time
         }
     }
 
@@ -66,7 +104,7 @@ document.addEventListener('DOMContentLoaded', function() {
         userDiv.textContent = message;
         userDiv.classList.add('user-message');
         messageWindow.appendChild(userDiv);
-        messageWindow.scrollTop = messageWindow.scrollHeight; // Auto-scroll to the latest message
+        messageWindow.scrollTop = messageWindow.scrollHeight;
     }
 
     function displayBotMessage(message) {
