@@ -3,13 +3,15 @@ import mysql.connector
 from mysql.connector import Error
 import spacy
 from collections import defaultdict
+import openai
 
+# Initialize Flask app
 app = Flask(__name__)
 
 # Load spaCy model
 nlp = spacy.load("en_core_web_sm")
 
-# MySQL database details
+# MySQL database configuration
 db_config = {
     'host': 'localhost',
     'user': 'root',
@@ -17,7 +19,12 @@ db_config = {
     'database': 'virtual_assistent'
 }
 
-# Connect to the database
+
+openai.api_type = "azure"
+openai.api_key = "a5c2fe9fc4604b0fbf7b592682ac6c85"
+openai.api_base = "https://ommetasat-gpt4.openai.azure.com/"
+openai.api_version = "2023-03-15-preview"
+
 def get_db_connection():
     connection = None
     try:
@@ -26,26 +33,26 @@ def get_db_connection():
         print(f"The error '{e}' occurred")
     return connection
 
-# Common greetings and their responses
+# Common greetings and responses
 greetings = {
     'hi': 'Hello! How can I assist you today?',
     'hello': 'Hi there! What can I do for you?',
     'hey': 'Hey! How can I help you?'
 }
 
-# Route for serving the webpage
+# Route for the index page
 @app.route('/')
 def index():
     return render_template('index.html')
 
-# Route for handling AJAX requests
+# Route for chatbot responses
 @app.route('/chatbot', methods=['POST'])
 def chatbot():
     user_message = request.json['message']
     response = get_response(user_message)
     return jsonify({'response': response})
 
-# Function to get a response from the database using spaCy and keywords
+# Function to get a response
 def get_response(user_message):
     # Check for common greetings
     if user_message.lower() in greetings:
@@ -53,26 +60,30 @@ def get_response(user_message):
 
     # Process the message with spaCy
     doc = nlp(user_message)
-    # Extract keywords (nouns, verbs, named entities)
+    # Extract keywords
     keywords = [token.text.lower() for token in doc if token.pos_ in ["NOUN", "VERB"] or token.ent_type_]
 
-    # Handle short queries with no informative content
+    # Handle short queries
     if not keywords:
-        return "Can you please provide more details so I can assist you better?"
+        return "Can you please provide more details?"
 
     # Connect to the database
     conn = get_db_connection()
     if not conn:
-        return "I'm currently unable to connect to the database."
+        return "Unable to connect to the database."
 
     try:
-        # Get a response using the extracted keywords
+        # Get a response using keywords
         response = get_response_from_keywords(conn, keywords)
-        return response if response else "I'm not sure how to answer that. Let's try searching for a professional."
+        if response:
+            return response
+        else:
+            # Query Azure OpenAI if no database response
+            return query_azure_openai(user_message)
     finally:
         conn.close()
 
-# Function to query the database based on the extracted keywords
+# Function to get response from database using keywords
 def get_response_from_keywords(conn, keywords):
     cursor = conn.cursor()
     answer_scores = defaultdict(int)
@@ -93,14 +104,26 @@ def get_response_from_keywords(conn, keywords):
             answer_scores[faq_id] += 1
 
     best_faq_id = max(answer_scores, key=answer_scores.get, default=None)
-    if best_faq_id is not None:
+    if best_faq_id:
         answer_query = "SELECT answer FROM faqs WHERE id = %s"
         cursor.execute(answer_query, (best_faq_id,))
         best_answer = cursor.fetchone()
         if best_answer:
             return best_answer[0]
+    return None
 
-    return "I'm not sure how to answer that. Can you please provide more details?"
+def query_azure_openai(query_text):
+    try:
+        response = openai.ChatCompletion.create(
+            engine="chatgpt432k",
+            messages=[{"role": "user", "content": query_text}],
+            max_tokens=15000,
+            temperature=0.5
+        )
+        return response.choices[0].message['content']
+    except Exception as e:
+        print(f"Error querying Azure OpenAI: {e}")
+        return "Sorry, I can't provide an answer at the moment."
 
 if __name__ == '__main__':
     app.run(port=5000)
