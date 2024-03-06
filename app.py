@@ -3,6 +3,7 @@ import mysql.connector
 from mysql.connector import Error
 import spacy
 from collections import defaultdict
+import os
 import openai
 
 # Initialize Flask app
@@ -21,8 +22,8 @@ db_config = {
 
 
 openai.api_type = "azure"
-openai.api_key = "a5c2fe9fc4604b0fbf7b592682ac6c85"
-openai.api_base = "https://ommetasat-gpt4.openai.azure.com/"
+openai.api_key = os.getenv('OPENAI_API_KEY')
+openai.api_base = os.getenv('OPENAI_API_BASE')
 openai.api_version = "2023-03-15-preview"
 
 def get_db_connection():
