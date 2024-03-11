@@ -31,13 +31,32 @@ document.addEventListener('DOMContentLoaded', function() {
             // Display greeting message if it's the first time
             if (isFirstTime) {
                 displayBotMessage("Hello our conpany provides assistance with water leaks, AC, locksmithing and heater repairs what can we help you with.");
+                displayServiceSuggestions();
                 isFirstTime = false; // Set to false so it doesn't show again
+                
             }
         } else {
             chatContainer.style.display = 'none';
             chatToggle.style.display = 'block';
         }
     }
+    function displayServiceSuggestions() {
+        const suggestions = ["Locksmith", "Boilers", "AC Technician", "Plumber"];
+        const suggestionsDiv = document.createElement('div');
+        suggestionsDiv.id = 'service-suggestions';
+
+        suggestions.forEach(function(suggestion) {
+            const button = document.createElement('button');
+            button.textContent = suggestion;
+            button.classList.add('service-button');
+            button.onclick = function() { handleServiceSelection(suggestion); }; // You'll define this function to handle selection
+            suggestionsDiv.appendChild(button);
+        });
+
+        messageWindow.appendChild(suggestionsDiv);
+        messageWindow.scrollTop = messageWindow.scrollHeight;
+    }
+    
 
     // Event listeners for toggle and close chat buttons
     chatToggle.addEventListener('click', toggleChat);

@@ -20,11 +20,12 @@ db_config = {
     'database': 'virtual_assistent'
 }
 
-
-openai.api_type = "azure"
 openai.api_key = os.getenv('OPENAI_API_KEY')
 openai.api_base = os.getenv('OPENAI_API_BASE')
 openai.api_version = "2023-03-15-preview"
+
+# Variable to store the current service category
+current_category = None
 
 def get_db_connection():
     connection = None
@@ -41,19 +42,25 @@ greetings = {
     'hey': 'Hey! How can I help you?'
 }
 
-# Route for the index page
 @app.route('/')
 def index():
     return render_template('index.html')
 
-# Route for chatbot responses
 @app.route('/chatbot', methods=['POST'])
 def chatbot():
+    global current_category
     user_message = request.json['message']
-    response = get_response(user_message)
+    response = ''
+
+    # If the user's message is one of the service categories, store it
+    if user_message.lower() in ["locksmith", "boilers", "ac technician", "plumber"]:
+        current_category = user_message.lower()
+        response = f'You selected {current_category}. How may I assist you with {current_category}?'
+    else:
+        response = get_response(user_message)
+    
     return jsonify({'response': response})
 
-# Function to get a response
 def get_response(user_message):
     # Check for common greetings
     if user_message.lower() in greetings:
@@ -84,20 +91,33 @@ def get_response(user_message):
     finally:
         conn.close()
 
-# Function to get response from database using keywords
 def get_response_from_keywords(conn, keywords):
+    global current_category
     cursor = conn.cursor()
     answer_scores = defaultdict(int)
 
-    for keyword in keywords:
+    # If a service category has been set, use it to filter the query
+    if current_category:
+        query = """
+        SELECT f.id, f.answer
+        FROM faqs f
+        INNER JOIN ServiceCategories sc ON f.id = sc.question_id
+        WHERE sc.category = %s AND fk.keyword LIKE %s
+        """
+    else:
         query = """
         SELECT f.id, f.answer
         FROM faqs f
         INNER JOIN faq_keywords fk ON f.id = fk.faq_id
         WHERE fk.keyword LIKE %s
         """
-        like_keyword = f"%{keyword}%"
-        cursor.execute(query, (like_keyword,))
+
+    for keyword in keywords:
+        like_keyword = '%' + keyword + '%'
+        if current_category:
+            cursor.execute(query, (current_category, like_keyword))
+        else:
+            cursor.execute(query, (like_keyword,))
         faq_entries = cursor.fetchall()
 
         for entry in faq_entries:
