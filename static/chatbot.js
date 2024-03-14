@@ -77,7 +77,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Function to simulate fetching professional info
     function fetchProfessional(serviceCategory) {
-        // Endpoint where your REST API is listening
         const apiUrl = `/api/get_professional/${serviceCategory}`;
     
         fetch(apiUrl)
@@ -88,15 +87,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 return response.json();
             })
             .then(data => {
-                // Display the fetched professional's details
                 displayBotMessage(`Contact ${data.name} at ${data.phone} for ${serviceCategory} services.`);
+                askForClientDetails(); // Moved to a separate function for clarity.
             })
             .catch(error => {
-                // Handle any errors here
                 console.error('There has been a problem with your fetch operation:', error);
                 displayBotMessage('Sorry, I could not find a professional at the moment.');
+                askForClientDetails(); // Ask for details even if there is an error.
             });
     }
+    
+    function askForClientDetails() {
+        displayBotMessage("Please provide your details.", true);
+    }
+    
 
     // Event listeners for toggle and close chat buttons
     chatToggle.addEventListener('click', toggleChat);
@@ -111,12 +115,87 @@ document.addEventListener('DOMContentLoaded', function() {
         messageWindow.scrollTop = messageWindow.scrollHeight;
     }
 
-    function displayBotMessage(message) {
+    function displayBotMessage(message, askForDetails = false) {
         const botDiv = document.createElement('div');
         botDiv.textContent = message;
         botDiv.classList.add('bot-message');
         messageWindow.appendChild(botDiv);
+
+        if (askForDetails) {
+            addClientDetailInputs();
+        }
+
         messageWindow.scrollTop = messageWindow.scrollHeight;
+    }
+    function addClientDetailInputs() {
+        const inputFields = ['Name', 'Number', 'Address'];
+        const inputContainer = document.createElement('div');
+        inputContainer.id = 'client-detail-inputs';
+
+        inputFields.forEach(field => {
+            const inputDiv = document.createElement('div');
+            inputDiv.className = 'input-field';
+
+            const label = document.createElement('label');
+            label.textContent = field;
+            label.htmlFor = 'client-' + field.toLowerCase();
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.id = 'client-' + field.toLowerCase();
+            input.name = field.toLowerCase();
+
+            inputDiv.appendChild(label);
+            inputDiv.appendChild(input);
+            inputContainer.appendChild(inputDiv);
+        });
+
+        const submitButton = document.createElement('button');
+        submitButton.textContent = 'Submit Details';
+        submitButton.onclick = submitClientDetails;
+
+        inputContainer.appendChild(submitButton);
+        messageWindow.appendChild(inputContainer);
+    }
+
+    // Function to submit client details
+    function submitClientDetails() {
+        const clientDetails = {
+            name: document.getElementById('client-name').value,
+            number: document.getElementById('client-number').value,
+            address: document.getElementById('client-address').value
+        };
+
+        // AJAX request to send data to server
+        $.ajax({
+            type: 'POST',
+            url: '/submit_client_details',
+            contentType: 'application/json',
+            data: JSON.stringify(clientDetails),
+            success: function(response) {
+                displayBotMessage(response.message);
+            },
+            error: function() {
+                displayBotMessage("Sorry, there was an error processing your details.");
+            }
+        });
+
+        const inputContainer = document.getElementById('client-detail-inputs');
+        inputContainer.parentNode.removeChild(inputContainer);
+    }
+
+    // Modify the sendMessage function to handle the client detail input case
+    function sendMessage() {
+        const message = userInput.value.trim();
+        if (message) {
+            const clientDetailInputs = document.getElementById('client-detail-inputs');
+            if (clientDetailInputs) {
+                return; // Do not proceed with usual message sending if in client detail input mode
+            }
+
+            // Existing sendMessage logic...
+            // ...
+        }
     }
 
     // Event listener for send message button and enter key in input

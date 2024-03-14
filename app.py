@@ -1,12 +1,16 @@
 from flask import Flask, request, jsonify, render_template
 import mysql.connector
 from mysql.connector import Error
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 import spacy
-from collections import defaultdict
+import ssl
 import os
 import openai
 from dotenv import load_dotenv
-
+import smtplib
+from collections import defaultdict  # Add this line
 load_dotenv()
 
 # Initialize Flask app
@@ -22,6 +26,10 @@ db_config = {
     'password': 'password',
     'database': 'virtual_assistent'
 }
+EMAIL_HOST = os.getenv('EMAIL_HOST')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT'))  # Convert port to an integer
+EMAIL_ADDRESS = os.getenv('EMAIL_ADDRESS')
+EMAIL_PASSWORD = os.getenv('EMAIL_PASSWORD')
 
 openai.api_type = "azure"
 openai.api_key = os.getenv("openai.api_key")
@@ -29,6 +37,30 @@ openai.api_base = os.getenv("openai.api_base")
 openai.api_version = "2023-03-15-preview"
 # Variable to store the current service category
 current_category = None
+
+def send_email(to_address, client_details):
+    try:
+        # Use a secure SSL context
+        context = ssl.create_default_context()
+
+        # Create a new message
+        message = MIMEMultipart()
+        message['From'] = EMAIL_ADDRESS
+        message['To'] = to_address
+        message['Subject'] = 'New Client Details'
+
+        # Create the email body
+        body = f"Name: {client_details['name']}\nNumber: {client_details['number']}\nAddress: {client_details['address']}"
+        message.attach(MIMEText(body, 'plain'))
+
+        # Connect to the Gmail SMTP server and send the email
+        with smtplib.SMTP_SSL(EMAIL_HOST, EMAIL_PORT, context=context) as server:
+            server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)  # Use your app-specific password here
+            server.sendmail(EMAIL_ADDRESS, to_address, message.as_string())
+        return "Email sent successfully."
+    except Exception as e:
+        print(f"Error sending email: {e}")
+        return "Failed to send email."
 
 def get_db_connection():
     connection = None
@@ -48,6 +80,12 @@ greetings = {
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/submit_client_details', methods=['POST'])
+def submit_client_details():
+    client_details = request.json
+    email_status = send_email("vortexst109@gmail.com", client_details)
+    return jsonify({'message': email_status})
 
 @app.route('/chatbot', methods=['POST'])
 def chatbot():
