@@ -5,6 +5,9 @@ import spacy
 from collections import defaultdict
 import os
 import openai
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -20,10 +23,10 @@ db_config = {
     'database': 'virtual_assistent'
 }
 
-openai.api_key = os.getenv('OPENAI_API_KEY')
-openai.api_base = os.getenv('OPENAI_API_BASE')
+openai.api_type = "azure"
+openai.api_key = os.getenv("openai.api_key")
+openai.api_base = os.getenv("openai.api_base")
 openai.api_version = "2023-03-15-preview"
-
 # Variable to store the current service category
 current_category = None
 
