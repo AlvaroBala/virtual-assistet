@@ -335,3 +335,89 @@
     background-color: #30f100;
     color: white;
 }
+
+
+/* styling for the form of the mail */
+
+.client-details-container {
+    background-color: #f4f7f6; /* Same light background */
+    border-radius: 8px; /* Slightly smaller radius for a less pronounced curve */
+    padding: 15px; /* Less padding to reduce size */
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1); /* Slightly smaller shadow */
+    transition: opacity 0.3s ease;
+  }
+  
+  .chatbot-input-field {
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column; /* Stack label and input on top of each other */
+  }
+  
+  .chatbot-label {
+    display: block;
+    color: #333;
+    font-size: 13px; /* Smaller font size */
+    order: 1; /* Make sure label comes first */
+    width: 100%; /* Full width */
+    margin-bottom: 5px;
+    min-width: 100px
+
+  }
+  
+  .chatbot-input {
+    width: 90%; /* Makes the input take up the full width of its container */
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    order: 2; /* Make sure input comes after label */
+    width: calc(100% - 20px); /* Adjust width based on padding and borders */
+  }
+  
+  .chatbot-input::placeholder {
+    color: #888;
+  }
+  
+  .chatbot-submit-button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px 16px; /* Smaller padding */
+    text-transform: uppercase;
+    border-radius: 4px; /* Smaller radius for the button */
+    cursor: pointer;
+    font-size: 13px; /* Smaller font size */
+    transition: background-color 0.3s ease;
+  }
+  
+  .chatbot-submit-button:hover {
+    background-color: #45a049;
+  }
+  
+  .input-error {
+    border-color: #e74c3c;
+  }
+  
+  .input-error:focus {
+    outline-color: #e74c3c;
+  }
+  .input-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px; 
+}
+
+.inline-label {
+    margin-right: 10px; 
+    /* flex-basis: 30%; Adjust this based on your longest label */
+    flex-shrink: 0;
+    text-align: right;
+}
+
+.inline-input {
+    /* margin-left: 10px;  */
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+

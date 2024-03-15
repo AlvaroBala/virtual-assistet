@@ -128,35 +128,57 @@ document.addEventListener('DOMContentLoaded', function() {
         messageWindow.scrollTop = messageWindow.scrollHeight;
     }
     function addClientDetailInputs() {
-        const inputFields = ['Name', 'Number', 'Address'];
-        const inputContainer = document.createElement('div');
-        inputContainer.id = 'client-detail-inputs';
+    const inputFields = ['Name', 'Number', 'Address'];
+    const inputContainer = document.createElement('div');
+    inputContainer.id = 'client-detail-inputs';
+    inputContainer.className = 'client-details-container'; // Added class for styling
 
+    inputFields.forEach(field => {
+        const inputWrapper = document.createElement('div');
+        inputWrapper.className = 'input-wrapper';
+    
+        const label = document.createElement('label');
+        label.textContent = `${field}:`;
+        label.htmlFor = `client-${field.toLowerCase()}`;
+        label.className = 'inline-label';
+    
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.id = `client-${field.toLowerCase()}`;
+        input.name = field.toLowerCase();
+        input.className = 'inline-input';
+        input.placeholder = `Your ${field.toLowerCase()}`;
+        input.setAttribute('required', '');
+    
+        inputWrapper.appendChild(label);
+        inputWrapper.appendChild(input);
+        inputContainer.appendChild(inputWrapper);
+    });
+    
+    
+    
+    const submitButton = document.createElement('button');
+    submitButton.textContent = 'Submit Details';
+    submitButton.className = 'chatbot-submit-button'; // Added class for styling
+    submitButton.onclick = submitClientDetails;
+    
+    // Adding an event listener for validation feedback
+    submitButton.addEventListener('click', function(event) {
         inputFields.forEach(field => {
-            const inputDiv = document.createElement('div');
-            inputDiv.className = 'input-field';
-
-            const label = document.createElement('label');
-            label.textContent = field;
-            label.htmlFor = 'client-' + field.toLowerCase();
-
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.id = 'client-' + field.toLowerCase();
-            input.name = field.toLowerCase();
-
-            inputDiv.appendChild(label);
-            inputDiv.appendChild(input);
-            inputContainer.appendChild(inputDiv);
+            const input = document.getElementById(`client-${field.toLowerCase()}`);
+            if (!input.value) {
+                input.className += ' input-error'; // Update class to show error
+            }
         });
+    });
 
-        const submitButton = document.createElement('button');
-        submitButton.textContent = 'Submit Details';
-        submitButton.onclick = submitClientDetails;
+    inputContainer.appendChild(submitButton);
+    messageWindow.appendChild(inputContainer);
 
-        inputContainer.appendChild(submitButton);
-        messageWindow.appendChild(inputContainer);
-    }
+    // Optional: animate the container for a better user experience
+    inputContainer.style.opacity = 0;
+    setTimeout(() => inputContainer.style.opacity = 1, 100);
+}
 
     // Function to submit client details
     function submitClientDetails() {
