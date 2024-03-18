@@ -60,6 +60,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Function to handle service selection
     function handleServiceSelection(selectedButton) {
+        selectedService = selectedButton.textContent;
         // Fetch and display professional information for the selected service
         fetchProfessional(selectedButton.textContent);
         
@@ -128,39 +129,56 @@ document.addEventListener('DOMContentLoaded', function() {
         messageWindow.scrollTop = messageWindow.scrollHeight;
     }
     function addClientDetailInputs() {
-    const inputFields = ['Name', 'Number', 'Address'];
-    const inputContainer = document.createElement('div');
-    inputContainer.id = 'client-detail-inputs';
-    inputContainer.className = 'client-details-container'; // Added class for styling
-
-    inputFields.forEach(field => {
-        const inputWrapper = document.createElement('div');
-        inputWrapper.className = 'input-wrapper';
+        const inputFields = ['Name', 'Number', 'Address', 'Description']; // Add 'Description' to the list
+        const inputContainer = document.createElement('div');
+        inputContainer.id = 'client-detail-inputs';
+        inputContainer.className = 'client-details-container'; // Added class for styling
     
-        const label = document.createElement('label');
-        label.textContent = `${field}:`;
-        label.htmlFor = `client-${field.toLowerCase()}`;
-        label.className = 'inline-label';
+        inputFields.forEach(field => {
+            const inputWrapper = document.createElement('div');
+            inputWrapper.className = 'input-wrapper';
     
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.id = `client-${field.toLowerCase()}`;
-        input.name = field.toLowerCase();
-        input.className = 'inline-input';
-        input.placeholder = `Your ${field.toLowerCase()}`;
-        input.setAttribute('required', '');
+            const label = document.createElement('label');
+            label.textContent = `${field}:`;
+            label.htmlFor = `client-${field.toLowerCase()}`;
+            label.className = 'inline-label';
     
-        inputWrapper.appendChild(label);
-        inputWrapper.appendChild(input);
-        inputContainer.appendChild(inputWrapper);
-    });
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.id = `client-${field.toLowerCase()}`;
+            input.name = field.toLowerCase();
+            input.className = 'inline-input';
+            input.placeholder = `Your ${field.toLowerCase()}`;
+            input.required = true; // Make the input non-nullable (required)
     
+            // If the field is 'Description', change its type to 'textarea' for multi-line input
+            if (field === 'Description') {
+                const textarea = document.createElement('textarea');
+                textarea.id = `client-${field.toLowerCase()}`;
+                textarea.name = field.toLowerCase();
+                textarea.className = 'inline-textarea';
+                textarea.placeholder = `Your ${field.toLowerCase()}`;
+                textarea.required = true; // Make the textarea non-nullable (required)
+                inputWrapper.appendChild(label);
+                inputWrapper.appendChild(textarea);
+            } else {
+                inputWrapper.appendChild(label);
+                inputWrapper.appendChild(input);
+            }
     
+            inputContainer.appendChild(inputWrapper);
+        });
     
-    const submitButton = document.createElement('button');
-    submitButton.textContent = 'Submit Details';
-    submitButton.className = 'chatbot-submit-button'; // Added class for styling
-    submitButton.onclick = submitClientDetails;
+        // Add a submit button to the container
+        const submitButton = document.createElement('button');
+        submitButton.textContent = 'Submit Details';
+        submitButton.className = 'submit-details-button';
+        submitButton.onclick = submitClientDetails;
+    
+        inputContainer.appendChild(submitButton);
+        messageWindow.appendChild(inputContainer);
+    }
+    
     
     // Adding an event listener for validation feedback
     submitButton.addEventListener('click', function(event) {
@@ -178,33 +196,44 @@ document.addEventListener('DOMContentLoaded', function() {
     // Optional: animate the container for a better user experience
     inputContainer.style.opacity = 0;
     setTimeout(() => inputContainer.style.opacity = 1, 100);
-}
 
+
+    // Function to submit client details
     // Function to submit client details
     function submitClientDetails() {
         const clientDetails = {
             name: document.getElementById('client-name').value,
             number: document.getElementById('client-number').value,
-            address: document.getElementById('client-address').value
+            address: document.getElementById('client-address').value,
+            description: document.getElementById('client-description').value,
+            serviceCategory: selectedService  // Include the selected service category
         };
-
-        // AJAX request to send data to server
-        $.ajax({
-            type: 'POST',
-            url: '/submit_client_details',
-            contentType: 'application/json',
-            data: JSON.stringify(clientDetails),
-            success: function(response) {
-                displayBotMessage(response.message);
-            },
-            error: function() {
-                displayBotMessage("Sorry, there was an error processing your details.");
-            }
-        });
-
-        const inputContainer = document.getElementById('client-detail-inputs');
-        inputContainer.parentNode.removeChild(inputContainer);
+    // Ensure all fields are filled out before sending
+    for (let key in clientDetails) {
+        if (clientDetails[key].trim() === '') {
+            displayBotMessage(`Please fill out the ${key} field.`);
+            return;
+        }
     }
+
+    // AJAX request to send data to the server
+    $.ajax({
+        type: 'POST',
+        url: '/submit_client_details',
+        contentType: 'application/json',
+        data: JSON.stringify(clientDetails),
+        success: function(response) {
+            displayBotMessage(response.message);
+        },
+        error: function() {
+            displayBotMessage("Sorry, there was an error processing your details.");
+        }
+    });
+
+    // Remove the input fields after submission
+    const inputContainer = document.getElementById('client-detail-inputs');
+    inputContainer.parentNode.removeChild(inputContainer);
+}
 
     // Modify the sendMessage function to handle the client detail input case
     function sendMessage() {

@@ -39,6 +39,7 @@ openai.api_version = "2023-03-15-preview"
 current_category = None
 
 def send_email(to_address, client_details):
+    print(client_details)  # Debugging: print client details received
     try:
         # Use a secure SSL context
         context = ssl.create_default_context()
@@ -47,10 +48,16 @@ def send_email(to_address, client_details):
         message = MIMEMultipart()
         message['From'] = EMAIL_ADDRESS
         message['To'] = to_address
-        message['Subject'] = 'New Client Details'
-
-        # Create the email body
-        body = f"Name: {client_details['name']}\nNumber: {client_details['number']}\nAddress: {client_details['address']}"
+        
+        # Get service category from client details and set it as email subject
+        service_category = client_details.get('serviceCategory', 'General Inquiry')
+        message['Subject'] = f'New Request: {service_category}'
+        
+        # Create the email body, including the description
+        body = (f"Name: {client_details['name']}\n"
+                f"Number: {client_details['number']}\n"
+                f"Address: {client_details['address']}\n"
+                f"Description: {client_details['description']}")
         message.attach(MIMEText(body, 'plain'))
 
         # Connect to the Gmail SMTP server and send the email
@@ -61,7 +68,7 @@ def send_email(to_address, client_details):
     except Exception as e:
         print(f"Error sending email: {e}")
         return "Failed to send email."
-
+    
 def get_db_connection():
     connection = None
     try:
