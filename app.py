@@ -50,8 +50,8 @@ def send_email(to_address, client_details):
         message['To'] = to_address
         
         # Get service category from client details and set it as email subject
-        service_category = client_details.get('serviceCategory', 'General Inquiry')
-        message['Subject'] = f'New Request: {service_category}'
+        service_category = client_details['serviceCategory']
+        message['Subject'] = f'Request for: {service_category}'
         
         # Create the email body, including the description
         body = (f"Name: {client_details['name']}\n"
@@ -86,7 +86,7 @@ greetings = {
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('chatbot.html')
 
 @app.route('/submit_client_details', methods=['POST'])
 def submit_client_details():

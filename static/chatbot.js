@@ -6,7 +6,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const sendButton = document.getElementById('send-button');
     const messageWindow = document.getElementById('message-window');
     const closeBtn = document.getElementById('close-btn');
-
     // Create typing indicator container and dots
     const typingIndicatorContainer = document.createElement('div');
     typingIndicatorContainer.id = 'typing-indicator-container';
@@ -17,10 +16,8 @@ document.addEventListener('DOMContentLoaded', function() {
         typingIndicatorContainer.appendChild(dot);
     }
     messageWindow.appendChild(typingIndicatorContainer);
-
     // Flag to track if the chat is opened for the first time
     let isFirstTime = true;
-
     // Function to toggle the chat window
     function toggleChat() {
         if (chatContainer.style.display === 'none' || chatContainer.style.display === '') {
@@ -39,10 +36,9 @@ document.addEventListener('DOMContentLoaded', function() {
             chatToggle.style.display = 'block';
         }
     }
-
     // Function to display service suggestions
     function displayServiceSuggestions() {
-        const suggestions = ["Locksmith", "Boilers", "AC Technician", "Plumber"];
+        const suggestions = ["Locksmith", "Boilers", "Air Conditioning", "Plumber", "Heater", "Blinds"];
         const suggestionsDiv = document.createElement('div');
         suggestionsDiv.id = 'service-suggestions';
         
@@ -57,10 +53,11 @@ document.addEventListener('DOMContentLoaded', function() {
         messageWindow.appendChild(suggestionsDiv);
         messageWindow.scrollTop = messageWindow.scrollHeight;
     }
-
+    let selectedServiceCategory = '';
     // Function to handle service selection
     function handleServiceSelection(selectedButton) {
-        selectedService = selectedButton.textContent;
+        selectedServiceCategory = selectedButton.textContent;
+
         // Fetch and display professional information for the selected service
         fetchProfessional(selectedButton.textContent);
         
@@ -75,7 +72,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // Optionally, style the selected button to indicate it's selected
         selectedButton.classList.add('selected-service-button');
     }
-
     // Function to simulate fetching professional info
     function fetchProfessional(serviceCategory) {
         const apiUrl = `/api/get_professional/${serviceCategory}`;
@@ -99,14 +95,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function askForClientDetails() {
-        displayBotMessage("Please provide your details.", true);
+        const detailMessage = displayBotMessage("Please provide your details.", true);
+        detailMessage.id = 'detail-message';
     }
     
-
     // Event listeners for toggle and close chat buttons
     chatToggle.addEventListener('click', toggleChat);
     closeBtn.addEventListener('click', toggleChat);
-
     // Functions to display user and bot messages
     function displayUserMessage(message) {
         const userDiv = document.createElement('div');
@@ -115,139 +110,106 @@ document.addEventListener('DOMContentLoaded', function() {
         messageWindow.appendChild(userDiv);
         messageWindow.scrollTop = messageWindow.scrollHeight;
     }
-
     function displayBotMessage(message, askForDetails = false) {
         const botDiv = document.createElement('div');
         botDiv.textContent = message;
         botDiv.classList.add('bot-message');
         messageWindow.appendChild(botDiv);
-
         if (askForDetails) {
             addClientDetailInputs();
         }
-
         messageWindow.scrollTop = messageWindow.scrollHeight;
+        return botDiv; // Return the created div
     }
     function addClientDetailInputs() {
-        const inputFields = ['Name', 'Number', 'Address', 'Description']; // Add 'Description' to the list
+        const inputFields = ['Name', 'Number', 'Address', 'Description'];
         const inputContainer = document.createElement('div');
-        inputContainer.id = 'client-detail-inputs';
-        inputContainer.className = 'client-details-container'; // Added class for styling
+        inputContainer.id = 'client-detail-form';
+        inputContainer.className = 'client-details-container'; // Apply container styles
     
         inputFields.forEach(field => {
             const inputWrapper = document.createElement('div');
-            inputWrapper.className = 'input-wrapper';
+            inputWrapper.className = 'input-wrapper'; // Use this for flexbox styling
     
             const label = document.createElement('label');
-            label.textContent = `${field}:`;
-            label.htmlFor = `client-${field.toLowerCase()}`;
+            label.textContent = field + ':';
             label.className = 'inline-label';
+            label.htmlFor = 'client-' + field.toLowerCase();
     
             const input = document.createElement('input');
-            input.type = 'text';
-            input.id = `client-${field.toLowerCase()}`;
+            input.type = (field === 'Number') ? 'tel' : 'text';
+            input.className = 'inline-input chatbot-input'; // Add both inline and input styles
+            input.id = 'client-' + field.toLowerCase();
             input.name = field.toLowerCase();
-            input.className = 'inline-input';
-            input.placeholder = `Your ${field.toLowerCase()}`;
-            input.required = true; // Make the input non-nullable (required)
-    
-            // If the field is 'Description', change its type to 'textarea' for multi-line input
+            input.required = true; // Ensure the input is not nullable
             if (field === 'Description') {
-                const textarea = document.createElement('textarea');
-                textarea.id = `client-${field.toLowerCase()}`;
-                textarea.name = field.toLowerCase();
-                textarea.className = 'inline-textarea';
-                textarea.placeholder = `Your ${field.toLowerCase()}`;
-                textarea.required = true; // Make the textarea non-nullable (required)
-                inputWrapper.appendChild(label);
-                inputWrapper.appendChild(textarea);
-            } else {
-                inputWrapper.appendChild(label);
-                inputWrapper.appendChild(input);
+                input.placeholder = 'Please describe your issue'; // Placeholder for description
             }
     
+            inputWrapper.appendChild(label);
+            inputWrapper.appendChild(input);
             inputContainer.appendChild(inputWrapper);
         });
     
-        // Add a submit button to the container
         const submitButton = document.createElement('button');
         submitButton.textContent = 'Submit Details';
-        submitButton.className = 'submit-details-button';
+        submitButton.className = 'chatbot-submit-button'; // Apply button styles
+        submitButton.type = 'button';
         submitButton.onclick = submitClientDetails;
     
         inputContainer.appendChild(submitButton);
         messageWindow.appendChild(inputContainer);
     }
-    
-    
-    // Adding an event listener for validation feedback
-    submitButton.addEventListener('click', function(event) {
-        inputFields.forEach(field => {
-            const input = document.getElementById(`client-${field.toLowerCase()}`);
-            if (!input.value) {
-                input.className += ' input-error'; // Update class to show error
-            }
-        });
-    });
 
-    inputContainer.appendChild(submitButton);
-    messageWindow.appendChild(inputContainer);
-
-    // Optional: animate the container for a better user experience
-    inputContainer.style.opacity = 0;
-    setTimeout(() => inputContainer.style.opacity = 1, 100);
-
-
-    // Function to submit client details
     // Function to submit client details
     function submitClientDetails() {
+        // Check if all fields are filled in before submission
+        if(!document.getElementById('client-name').value || 
+           !document.getElementById('client-number').value || 
+           !document.getElementById('client-address').value || 
+           !document.getElementById('client-description').value) {
+            displayBotMessage("Please fill in all the details before submitting.");
+            return;
+        }
+    
         const clientDetails = {
             name: document.getElementById('client-name').value,
             number: document.getElementById('client-number').value,
             address: document.getElementById('client-address').value,
             description: document.getElementById('client-description').value,
-            serviceCategory: selectedService  // Include the selected service category
+            serviceCategory: selectedServiceCategory
         };
-    // Ensure all fields are filled out before sending
-    for (let key in clientDetails) {
-        if (clientDetails[key].trim() === '') {
-            displayBotMessage(`Please fill out the ${key} field.`);
-            return;
-        }
+
+        // AJAX request to send data to server
+        $.ajax({
+            type: 'POST',
+            url: '/submit_client_details',
+            contentType: 'application/json',
+            data: JSON.stringify(clientDetails),
+            success: function(response) {
+                displayBotMessage(response.message);
+                removeClientDetailForm(); // Remove the form after successful submission
+            },
+            error: function() {
+                displayBotMessage("Sorry, there was an error processing your details.");
+            }
+        });
     }
 
-    // AJAX request to send data to the server
-    $.ajax({
-        type: 'POST',
-        url: '/submit_client_details',
-        contentType: 'application/json',
-        data: JSON.stringify(clientDetails),
-        success: function(response) {
-            displayBotMessage(response.message);
-        },
-        error: function() {
-            displayBotMessage("Sorry, there was an error processing your details.");
-        }
-    });
+    // Function to remove the client detail form from the DOM
+    function removeClientDetailForm() {
+        const form = document.getElementById('client-detail-form');
+        const detailMessage = document.getElementById('detail-message'); // Get the message element by ID
 
-    // Remove the input fields after submission
-    const inputContainer = document.getElementById('client-detail-inputs');
-    inputContainer.parentNode.removeChild(inputContainer);
-}
+        if (form) {
+            form.remove(); // Remove the form from the DOM
+        }
+        if (detailMessage) {
+            detailMessage.remove(); // Remove the detail message from the DOM
+        }
+    }
 
     // Modify the sendMessage function to handle the client detail input case
-    function sendMessage() {
-        const message = userInput.value.trim();
-        if (message) {
-            const clientDetailInputs = document.getElementById('client-detail-inputs');
-            if (clientDetailInputs) {
-                return; // Do not proceed with usual message sending if in client detail input mode
-            }
-
-            // Existing sendMessage logic...
-            // ...
-        }
-    }
 
     // Event listener for send message button and enter key in input
     sendButton.addEventListener('click', sendMessage);
@@ -256,7 +218,6 @@ document.addEventListener('DOMContentLoaded', function() {
             sendMessage();
         }
     });
-
     // Function to send a message
     function sendMessage() {
         const message = userInput.value.trim();
@@ -289,14 +250,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 1500); // Adjust this delay to match your bot's average response time
         }
     }
-
     // Function to display typing indicator
     function showTypingIndicator() {
         typingIndicatorContainer.style.display = 'flex';
         messageWindow.appendChild(typingIndicatorContainer);
         messageWindow.scrollTop = messageWindow.scrollHeight;
     }
-
     function hideTypingIndicator() {
         typingIndicatorContainer.style.display = 'none';
         if (typingIndicatorContainer.parentNode === messageWindow) {

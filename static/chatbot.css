@@ -339,6 +339,21 @@
 
 /* styling for the form of the mail */
 
+@media (max-width: 600px) {
+    .input-wrapper {
+      flex-direction: column; /* Stack them on smaller screens */
+    }
+  
+    .inline-label {
+      margin-bottom: 5px; /* Add space between label and input on small screens */
+      text-align: left; /* Align text to the left on small screens */
+    }
+  
+    .inline-input {
+      width: 100%; /* Full width on small screens */
+    }
+  }
+
 .client-details-container {
     background-color: #f4f7f6; /* Same light background */
     border-radius: 8px; /* Slightly smaller radius for a less pronounced curve */
