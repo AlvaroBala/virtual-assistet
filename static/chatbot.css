@@ -23,12 +23,15 @@
 }
 
 #message-window {
-    height: 250px;
+    height: 350px;
     overflow-y: auto;
     padding: 10px 20px;
     background-color: #f9f9f9;
     display: flex;
     flex-direction: column;
+    padding: 20px; /* More padding for spacious feeling */
+    background-color: #ffffff; /* White background for a clean look */
+    font-size: 14px; /* Standard font size for messages */
 }
 
 #message-window > div {
@@ -140,7 +143,7 @@
 }
 
 #message-window {
-    height: 300px; /* Increased height */
+    height: 350px; /* Increased height */
     overflow-y: auto;
     padding: 20px; /* More padding for spacious feeling */
     background-color: #ffffff; /* White background for a clean look */
@@ -332,10 +335,14 @@
 }
 .selected-service-button {
     /* Add some styles to indicate the button is selected, e.g., a different background color */
-    background-color: #30f100;
+    background-color: #00f178;
     color: white;
 }
-
+#service-suggestions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Two columns of equal width */
+    padding: 10px; /* Padding around the grid */
+  }
 
 /* styling for the form of the mail */
 

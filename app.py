@@ -64,7 +64,7 @@ def send_email(to_address, client_details):
         with smtplib.SMTP_SSL(EMAIL_HOST, EMAIL_PORT, context=context) as server:
             server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)  # Use your app-specific password here
             server.sendmail(EMAIL_ADDRESS, to_address, message.as_string())
-        return "Email sent successfully."
+        return "Tus datos fueron guardados."
     except Exception as e:
         print(f"Error sending email: {e}")
         return "Failed to send email."
@@ -192,7 +192,7 @@ def query_azure_openai(query_text):
         return response.choices[0].message['content']
     except Exception as e:
         print(f"Error querying Azure OpenAI: {e}")
-        return "Sorry, I can't provide an answer at the moment."
+        return "Lo siento, no puedo dar una respuesta en este momento."
 
 if __name__ == '__main__':
     app.run(port=5000)

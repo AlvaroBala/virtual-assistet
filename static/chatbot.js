@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
             // Display greeting message if it's the first time
             if (isFirstTime) {
-                displayBotMessage("Hello our company provides assistance with water leaks, AC, locksmithing, and heater repairs. What can we help you with?");
+                displayBotMessage("Hola, seleccione uno de los botones a continuación relacionados con su problema, complete sus datos y le daremos el contacto de uno de nuestros técnicos.");
                 displayServiceSuggestions();
                 isFirstTime = false; // Set to false so it doesn't show again
             }
@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     // Function to display service suggestions
     function displayServiceSuggestions() {
-        const suggestions = ["Locksmith", "Boilers", "Air Conditioning", "Plumber", "Heater", "Blinds"];
+        const suggestions = ["Cerrajero", "Calderas", "Aire Acondicionado", "Fontanero", "Calefacción", "Persianas"];
         const suggestionsDiv = document.createElement('div');
         suggestionsDiv.id = 'service-suggestions';
         
@@ -89,13 +89,13 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => {
                 console.error('There has been a problem with your fetch operation:', error);
-                displayBotMessage('Sorry, I could not find a professional at the moment.');
+                displayBotMessage('Lo sentimos, no pude encontrar un técnico en este momento.');
                 askForClientDetails(); // Ask for details even if there is an error.
             });
     }
     
     function askForClientDetails() {
-        const detailMessage = displayBotMessage("Please provide your details.", true);
+        const detailMessage = displayBotMessage("Por favor proporcione sus datos.", true);
         detailMessage.id = 'detail-message';
     }
     
@@ -122,38 +122,46 @@ document.addEventListener('DOMContentLoaded', function() {
         return botDiv; // Return the created div
     }
     function addClientDetailInputs() {
-        const inputFields = ['Name', 'Number', 'Address', 'Description'];
+        const inputFields = [
+            { id: 'name', labelText: 'Nombre' },
+            { id: 'number', labelText: 'Número' },
+            { id: 'address', labelText: 'Dirección' },
+            { id: 'description', labelText: 'Descripción' }
+        ];
         const inputContainer = document.createElement('div');
         inputContainer.id = 'client-detail-form';
-        inputContainer.className = 'client-details-container'; // Apply container styles
+        inputContainer.className = 'client-details-container';
     
         inputFields.forEach(field => {
             const inputWrapper = document.createElement('div');
-            inputWrapper.className = 'input-wrapper'; // Use this for flexbox styling
+            inputWrapper.className = 'input-wrapper';
     
             const label = document.createElement('label');
-            label.textContent = field + ':';
+            label.textContent = field.labelText + ':';
             label.className = 'inline-label';
-            label.htmlFor = 'client-' + field.toLowerCase();
+            label.htmlFor = 'client-' + field.id;
     
-            const input = document.createElement('input');
-            input.type = (field === 'Number') ? 'tel' : 'text';
-            input.className = 'inline-input chatbot-input'; // Add both inline and input styles
-            input.id = 'client-' + field.toLowerCase();
-            input.name = field.toLowerCase();
-            input.required = true; // Ensure the input is not nullable
-            if (field === 'Description') {
-                input.placeholder = 'Please describe your issue'; // Placeholder for description
+            let inputElement;
+            if (field.id === 'description') {
+                inputElement = document.createElement('textarea');
+                inputElement.placeholder = 'Por favor describa su problema'; // Placeholder in Spanish
+            } else {
+                inputElement = document.createElement('input');
+                inputElement.type = (field.id === 'number') ? 'tel' : 'text';
             }
+            inputElement.id = 'client-' + field.id;
+            inputElement.name = field.id;
+            inputElement.className = 'chatbot-input';
+            inputElement.required = true;
     
             inputWrapper.appendChild(label);
-            inputWrapper.appendChild(input);
+            inputWrapper.appendChild(inputElement);
             inputContainer.appendChild(inputWrapper);
         });
     
         const submitButton = document.createElement('button');
-        submitButton.textContent = 'Submit Details';
-        submitButton.className = 'chatbot-submit-button'; // Apply button styles
+        submitButton.textContent = 'Enviar Detalles';
+        submitButton.className = 'chatbot-submit-button';
         submitButton.type = 'button';
         submitButton.onclick = submitClientDetails;
     
@@ -168,7 +176,7 @@ document.addEventListener('DOMContentLoaded', function() {
            !document.getElementById('client-number').value || 
            !document.getElementById('client-address').value || 
            !document.getElementById('client-description').value) {
-            displayBotMessage("Please fill in all the details before submitting.");
+            displayBotMessage("Por favor complete todos los detalles antes de enviar.");
             return;
         }
     
@@ -191,7 +199,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 removeClientDetailForm(); // Remove the form after successful submission
             },
             error: function() {
-                displayBotMessage("Sorry, there was an error processing your details.");
+                displayBotMessage("Lo sentimos, hubo un error al procesar tus datos..");
             }
         });
     }
