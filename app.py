@@ -10,13 +10,13 @@ import os
 import openai
 from dotenv import load_dotenv
 import smtplib
-from collections import defaultdict  # Add this line
+from collections import defaultdict 
 load_dotenv()
 
-# Initialize Flask app
+
 app = Flask(__name__)
 
-# Load spaCy model
+
 nlp = spacy.load("en_core_web_sm")
 
 # MySQL database configuration
@@ -27,7 +27,7 @@ db_config = {
     'database': 'virtual_assistent'
 }
 EMAIL_HOST = os.getenv('EMAIL_HOST')
-EMAIL_PORT = int(os.getenv('EMAIL_PORT'))  # Convert port to an integer
+EMAIL_PORT = int(os.getenv('EMAIL_PORT'))
 EMAIL_ADDRESS = os.getenv('EMAIL_ADDRESS')
 EMAIL_PASSWORD = os.getenv('EMAIL_PASSWORD')
 
@@ -39,7 +39,7 @@ openai.api_version = "2023-03-15-preview"
 current_category = None
 
 def send_email(to_address, client_details):
-    print(client_details)  # Debugging: print client details received
+    print(client_details) 
     try:
         # Use a secure SSL context
         context = ssl.create_default_context()
