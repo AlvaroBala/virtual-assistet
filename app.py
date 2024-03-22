@@ -23,9 +23,10 @@ nlp = spacy.load("en_core_web_sm")
 db_config = {
     'host': 'localhost',
     'user': 'root',
-    'password': 'password',
+    'password': 'password',  # Replace with the new password you've set
     'database': 'virtual_assistent'
 }
+
 EMAIL_HOST = os.getenv('EMAIL_HOST')
 EMAIL_PORT = int(os.getenv('EMAIL_PORT'))
 EMAIL_ADDRESS = os.getenv('EMAIL_ADDRESS')
