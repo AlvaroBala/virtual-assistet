@@ -326,7 +326,7 @@
 }
 .service-button:hover {
     background-color: #0056b3;
-    box-shadow: 0 6px #0bac2e;
+    box-shadow: 0 6px #62cf79;
     transform: translateY(-2px);
 }
 .service-button:active {
@@ -335,7 +335,7 @@
 }
 .selected-service-button {
     /* Add some styles to indicate the button is selected, e.g., a different background color */
-    background-color: #00f178;
+    background-color: #62cf79;
     color: white;
 }
 #service-suggestions {

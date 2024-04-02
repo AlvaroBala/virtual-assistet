@@ -74,7 +74,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     // Function to simulate fetching professional info
     function fetchProfessional(serviceCategory) {
-        const apiUrl = `/api/get_professional/${serviceCategory}`;
+        // add the api endpoint
+        const apiUrl = `/api/get_professional/${serviceCategory}`; 
     
         fetch(apiUrl)
             .then(response => {
@@ -140,6 +141,7 @@ document.addEventListener('DOMContentLoaded', function() {
             label.textContent = field.labelText + ':';
             label.className = 'inline-label';
             label.htmlFor = 'client-' + field.id;
+            
     
             let inputElement;
             if (field.id === 'description') {
@@ -196,7 +198,7 @@ document.addEventListener('DOMContentLoaded', function() {
             data: JSON.stringify(clientDetails),
             success: function(response) {
                 displayBotMessage(response.message);
-                removeClientDetailForm(); // Remove the form after successful submission
+                removeClientDetailForm();
             },
             error: function() {
                 displayBotMessage("Lo sentimos, hubo un error al procesar tus datos..");
@@ -255,7 +257,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         userInput.focus(); // Refocus on the input field even if there's an error
                     }
                 });
-            }, 1500); // Adjust this delay to match your bot's average response time
+            }, 1500);
         }
     }
     // Function to display typing indicator
