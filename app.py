@@ -52,18 +52,19 @@ def send_email(to_address, client_details):
         
         # Get service category from client details and set it as email subject
         service_category = client_details['serviceCategory']
-        message['Subject'] = f'Solicitud de: {service_category}'
+        message['Subject'] = f'Request for: {service_category}'
         
-        # Create the email body, including the description
-        body = (f"Nombre: {client_details['name']}\n"
-                f"Número: {client_details['number']}\n"
-                f"Dirección: {client_details['address']}\n"
-                f"Descripción: {client_details['description']}")
+        # Create the email body, including the description and postal code
+        body = (f"Name: {client_details['name']}\n"
+                f"Number: {client_details['number']}\n"
+                f"Address: {client_details['address']}\n"
+                f"Postal Code: {client_details['postcode']}\n"  # Use 'postcode' key instead of 'postalCode'
+                f"Description: {client_details['description']}")
         message.attach(MIMEText(body, 'plain'))
 
         # Connect to the Gmail SMTP server and send the email
         with smtplib.SMTP_SSL(EMAIL_HOST, EMAIL_PORT, context=context) as server:
-            server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)  
+            server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)  # Use your app-specific password here
             server.sendmail(EMAIL_ADDRESS, to_address, message.as_string())
         return "Tus datos fueron guardados."
     except Exception as e:
@@ -100,6 +101,14 @@ def chatbot():
     global current_category
     user_message = request.json['message']
     response = ''
+
+    # If the user's message is one of the service categories, store it
+    if user_message.lower() in ["locksmith", "boilers", "ac technician", "plumber"]:
+        current_category = user_message.lower()
+        response = f'You selected {current_category}. How may I assist you with {current_category}?'
+    else:
+        response = get_response(user_message)
+    
     return jsonify({'response': response})
 
 def get_response(user_message):

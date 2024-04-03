@@ -74,8 +74,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     // Function to simulate fetching professional info
     function fetchProfessional(serviceCategory) {
-        // add the api endpoint
-        const apiUrl = `/api/get_professional/${serviceCategory}`; 
+        const apiUrl = `https://crm-2.es/api/facturas-tecnico-id/{id}${serviceCategory}`;
     
         fetch(apiUrl)
             .then(response => {
@@ -85,13 +84,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 return response.json();
             })
             .then(data => {
-                displayBotMessage(`Contact ${data.name} at ${data.phone} for ${serviceCategory} services.`);
+                displayBotMessage(`Contact ${tecnico_nombre} at ${tecnico_telefono} for ${serviceCategory} services.`);
                 askForClientDetails(); // Moved to a separate function for clarity.
             })
             .catch(error => {
                 console.error('There has been a problem with your fetch operation:', error);
                 displayBotMessage('Lo sentimos, no pude encontrar un técnico en este momento.');
-                askForClientDetails(); // Ask for details even if there is an error.
+                askForClientDetails();
             });
     }
     
@@ -127,6 +126,7 @@ document.addEventListener('DOMContentLoaded', function() {
             { id: 'name', labelText: 'Nombre' },
             { id: 'number', labelText: 'Número' },
             { id: 'address', labelText: 'Dirección' },
+            { id: 'postcode', labelText: 'Código Postal' }, // Added postcode field
             { id: 'description', labelText: 'Descripción' }
         ];
         const inputContainer = document.createElement('div');
@@ -141,7 +141,6 @@ document.addEventListener('DOMContentLoaded', function() {
             label.textContent = field.labelText + ':';
             label.className = 'inline-label';
             label.htmlFor = 'client-' + field.id;
-            
     
             let inputElement;
             if (field.id === 'description') {
@@ -173,10 +172,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Function to submit client details
     function submitClientDetails() {
-        // Check if all fields are filled in before submission
         if(!document.getElementById('client-name').value || 
            !document.getElementById('client-number').value || 
            !document.getElementById('client-address').value || 
+           !document.getElementById('client-postcode').value || // Include postcode field
            !document.getElementById('client-description').value) {
             displayBotMessage("Por favor complete todos los detalles antes de enviar.");
             return;
@@ -186,10 +185,10 @@ document.addEventListener('DOMContentLoaded', function() {
             name: document.getElementById('client-name').value,
             number: document.getElementById('client-number').value,
             address: document.getElementById('client-address').value,
+            postcode: document.getElementById('client-postcode').value, // Include postcode value
             description: document.getElementById('client-description').value,
             serviceCategory: selectedServiceCategory
         };
-
         // AJAX request to send data to server
         $.ajax({
             type: 'POST',
@@ -198,7 +197,7 @@ document.addEventListener('DOMContentLoaded', function() {
             data: JSON.stringify(clientDetails),
             success: function(response) {
                 displayBotMessage(response.message);
-                removeClientDetailForm();
+                removeClientDetailForm(); // Remove the form after successful submission
             },
             error: function() {
                 displayBotMessage("Lo sentimos, hubo un error al procesar tus datos..");
@@ -257,7 +256,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         userInput.focus(); // Refocus on the input field even if there's an error
                     }
                 });
-            }, 1500);
+            }, 1500); // Adjust this delay to match your bot's average response time
         }
     }
     // Function to display typing indicator
