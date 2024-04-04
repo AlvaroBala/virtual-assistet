@@ -58,8 +58,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function handleServiceSelection(selectedButton) {
         selectedServiceCategory = selectedButton.textContent;
 
-        // Fetch and display professional information for the selected service
-        fetchProfessional(selectedButton.textContent);
         
         // Hide all other buttons except the one clicked
         const buttonsContainer = document.getElementById('service-suggestions');
@@ -71,28 +69,55 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Optionally, style the selected button to indicate it's selected
         selectedButton.classList.add('selected-service-button');
+        askForClientDetails();
     }
     // Function to simulate fetching professional info
-    function fetchProfessional(serviceCategory) {
-        const apiUrl = `https://crm-2.es/api/facturas-tecnico-id/{id}${serviceCategory}`;
     
-        fetch(apiUrl)
+    // Function to simulate fetching professional info
+    function fetchProfessional() {
+        // This should be dynamic or obtained from elsewhere in your application
+        const postalCode = '28022'; // Example postal code
+        const craftId = '149'; // Example craft ID
+
+        const apiUrl = `https://crm-2.es/api/tecnicos-disponibles`;
+        const fetchOptions = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'API-Key': '1954952eff1c76fbe2953b157502754fdbdcaffa'
+            },
+            body: JSON.stringify({
+                codigo_postal: postalCode,
+                oficio_id: craftId
+            })
+        };
+
+        fetch(apiUrl, fetchOptions)
             .then(response => {
                 if (!response.ok) {
-                    throw new Error('Network response was not ok ' + response.statusText);
+                    throw new Error('Network response was not ok: ' + response.statusText);
                 }
                 return response.json();
             })
             .then(data => {
-                displayBotMessage(`Contact ${tecnico_nombre} at ${tecnico_telefono} for ${serviceCategory} services.`);
-                askForClientDetails(); // Moved to a separate function for clarity.
+                // Check if the API response has technicians data
+                if (data && data.length > 0) {
+                    // Pick a random technician from the list
+                    const randomIndex = Math.floor(Math.random() * data.length);
+                    const technician = data[randomIndex];
+                    const contactInfo = `Contacte a ${technician.tecnico_nombre} en el teléfono ${technician.tecnico_telefono} para servicios de ${selectedServiceCategory}.`;
+                    displayBotMessage(contactInfo); // Display the random technician's contact info
+                } else {
+                    displayBotMessage('Lo sentimos, no pudimos encontrar un técnico en este momento.');
+                }
             })
             .catch(error => {
-                console.error('There has been a problem with your fetch operation:', error);
-                displayBotMessage('Lo sentimos, no pude encontrar un técnico en este momento.');
-                askForClientDetails();
+                console.error('Hubo un problema con la operación fetch:', error);
+                displayBotMessage('Lo sentimos, no pudimos encontrar un técnico en este momento.');
             });
     }
+
+// This function would be called after the user details have been successfully submitted.
     
     function askForClientDetails() {
         const detailMessage = displayBotMessage("Por favor proporcione sus datos.", true);
@@ -172,11 +197,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Function to submit client details
     function submitClientDetails() {
-        if(!document.getElementById('client-name').value || 
-           !document.getElementById('client-number').value || 
-           !document.getElementById('client-address').value || 
-           !document.getElementById('client-postcode').value || // Include postcode field
-           !document.getElementById('client-description').value) {
+        if (!document.getElementById('client-name').value || 
+            !document.getElementById('client-number').value || 
+            !document.getElementById('client-address').value || 
+            !document.getElementById('client-postcode').value || 
+            !document.getElementById('client-description').value) {
             displayBotMessage("Por favor complete todos los detalles antes de enviar.");
             return;
         }
@@ -185,10 +210,11 @@ document.addEventListener('DOMContentLoaded', function() {
             name: document.getElementById('client-name').value,
             number: document.getElementById('client-number').value,
             address: document.getElementById('client-address').value,
-            postcode: document.getElementById('client-postcode').value, // Include postcode value
+            postcode: document.getElementById('client-postcode').value, 
             description: document.getElementById('client-description').value,
             serviceCategory: selectedServiceCategory
         };
+    
         // AJAX request to send data to server
         $.ajax({
             type: 'POST',
@@ -197,28 +223,29 @@ document.addEventListener('DOMContentLoaded', function() {
             data: JSON.stringify(clientDetails),
             success: function(response) {
                 displayBotMessage(response.message);
-                removeClientDetailForm(); // Remove the form after successful submission
+                removeClientDetailForm();
+                fetchProfessional(selectedServiceCategory); // Fetch the professional's contact after confirmation message
             },
             error: function() {
-                displayBotMessage("Lo sentimos, hubo un error al procesar tus datos..");
+                displayBotMessage("Lo sentimos, hubo un error al procesar tus datos.");
             }
         });
     }
 
-    // Function to remove the client detail form from the DOM
     function removeClientDetailForm() {
         const form = document.getElementById('client-detail-form');
-        const detailMessage = document.getElementById('detail-message'); // Get the message element by ID
-
+        const detailMessage = document.getElementById('detail-message');
+    
         if (form) {
-            form.remove(); // Remove the form from the DOM
+            form.parentNode.removeChild(form);
         }
+    
         if (detailMessage) {
-            detailMessage.remove(); // Remove the detail message from the DOM
+            detailMessage.parentNode.removeChild(detailMessage);
         }
     }
 
-    // Modify the sendMessage function to handle the client detail input case
+
 
     // Event listener for send message button and enter key in input
     sendButton.addEventListener('click', sendMessage);
