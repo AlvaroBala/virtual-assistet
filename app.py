@@ -4,6 +4,7 @@ from mysql.connector import Error
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+import requests
 import spacy
 import ssl
 import os
@@ -11,10 +12,13 @@ import openai
 from dotenv import load_dotenv
 import smtplib
 from collections import defaultdict 
+from flask import Flask
+from flask_cors import CORS  # type: ignore
 load_dotenv()
 
 
 app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": "*"}}) 
 
 
 nlp = spacy.load("en_core_web_sm")
@@ -23,7 +27,7 @@ nlp = spacy.load("en_core_web_sm")
 db_config = {
     'host': 'localhost',
     'user': 'root',
-    'password': 'password',  # Replace with the new password you've set
+    'password': 'password', 
     'database': 'virtual_assistent'
 }
 
@@ -38,6 +42,24 @@ openai.api_base = os.getenv("openai.api_base")
 openai.api_version = "2023-03-15-preview"
 # Variable to store the current service category
 current_category = None
+
+
+@app.route('/proxy', methods=['POST'])
+def proxy():
+    external_api_url = 'https://crm-2.es/api/tecnicos-disponibles'
+    json_data = request.get_json()
+    response = requests.post(external_api_url, json=json_data, headers={
+        'API-Key': '1954952eff1c76fbe2953b157502754fdbdcaffa',
+        'Content-Type': 'application/json'
+    })
+    return jsonify(response.json())
+
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    return response
 
 def send_email(to_address, client_details):
     print(client_details) 

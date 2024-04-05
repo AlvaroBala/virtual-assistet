@@ -66,29 +66,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 button.style.display = 'none';
             }
         });
-        
-        // Optionally, style the selected button to indicate it's selected
         selectedButton.classList.add('selected-service-button');
         askForClientDetails();
     }
-    // Function to simulate fetching professional info
+   
     
     // Function to simulate fetching professional info
     function fetchProfessional() {
-        // This should be dynamic or obtained from elsewhere in your application
-        const postalCode = '28022'; // Example postal code
-        const craftId = '149'; // Example craft ID
-
-        const apiUrl = `https://crm-2.es/api/tecnicos-disponibles`;
+        // Instead of directly calling the external API, call the Flask proxy endpoint
+        const apiUrl = '/proxy'; // Flask server endpoint that acts as a proxy
         const fetchOptions = {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'API-Key': '1954952eff1c76fbe2953b157502754fdbdcaffa'
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                codigo_postal: postalCode,
-                oficio_id: craftId
+                codigo_postal: '28022', // The postal code
+                oficio_id: '149' // The craft ID
             })
         };
 
