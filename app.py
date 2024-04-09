@@ -48,12 +48,39 @@ current_category = None
 def proxy():
     external_api_url = 'https://crm-2.es/api/tecnicos-disponibles'
     json_data = request.get_json()
+    postal_code = json_data.get('codigo_postal', 'default_postal_code') # Default value if not provided
+    json_data['codigo_postal'] = postal_code
+
     response = requests.post(external_api_url, json=json_data, headers={
         'API-Key': '1954952eff1c76fbe2953b157502754fdbdcaffa',
         'Content-Type': 'application/json'
     })
     return jsonify(response.json())
 
+@app.route('/custom_proxy', methods=['POST'])
+def custom_proxy():
+    # The external API URL you're sending the request to
+    external_api_url = 'https://crm-2.es/api/api/oficios'
+
+    # Extract the JSON data from the incoming POST request
+    json_data = request.get_json()
+
+    # Get 'oficio_id' and 'oficio_description' from the JSON data or set default values
+    oficio_id = json_data.get('oficio_id', 'default_oficio_id')
+    oficio_description = json_data.get('oficio_description', 'default_description')
+
+    # Update the json_data with 'oficio_id' and 'oficio_description' if needed
+    json_data['oficio_id'] = oficio_id
+    json_data['oficio_description'] = oficio_description
+
+    # Make a POST request to the external API with the JSON data and required headers
+    response = requests.post(external_api_url, json=json_data, headers={
+        'API-Key': '1954952eff1c76fbe2953b157502754fdbdcaffa',
+        'Content-Type': 'application/json'
+    })
+
+    # Return the JSON response from the external API to the client
+    return jsonify(response.json())
 @app.after_request
 def after_request(response):
     response.headers.add('Access-Control-Allow-Origin', '*')

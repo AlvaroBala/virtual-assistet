@@ -24,12 +24,11 @@ document.addEventListener('DOMContentLoaded', function() {
             chatContainer.style.display = 'flex';
             chatToggle.style.display = 'none';
             userInput.focus(); // Focus on input field when chat opens
-    
-            // Display greeting message if it's the first time
+
             if (isFirstTime) {
                 displayBotMessage("Hola, seleccione uno de los botones a continuación relacionados con su problema, complete sus datos y le daremos el contacto de uno de nuestros técnicos.");
-                displayServiceSuggestions();
-                isFirstTime = false; // Set to false so it doesn't show again
+                displayServiceOptions(); // Ensure this is called instead of displayServiceSuggestions
+                isFirstTime = false;
             }
         } else {
             chatContainer.style.display = 'none';
@@ -37,81 +36,192 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     // Function to display service suggestions
-    function displayServiceSuggestions() {
-        const suggestions = ["Cerrajero", "Calderas", "Aire Acondicionado", "Fontanero", "Calefacción", "Persianas"];
-        const suggestionsDiv = document.createElement('div');
-        suggestionsDiv.id = 'service-suggestions';
+    // function displayServiceSuggestions() {
+    //     const suggestions = ["Cerrajero", "Calderas", "Aire Acondicionado", "Fontanero", "Calefacción", "Persianas"];
+    //     const suggestionsDiv = document.createElement('div');
+    //     suggestionsDiv.id = 'service-suggestions';
         
-        suggestions.forEach(function(suggestion) {
-            const button = document.createElement('button');
-            button.textContent = suggestion;
-            button.classList.add('service-button');
-            button.onclick = function() { handleServiceSelection(button); };
-            suggestionsDiv.appendChild(button);
+    //     suggestions.forEach(function(suggestion) {
+    //         const button = document.createElement('button');
+    //         button.textContent = suggestion;
+    //         button.classList.add('service-button');
+    //         button.onclick = function() { handleServiceSelection(button); };
+    //         suggestionsDiv.appendChild(button);
+    //     });
+        
+    //     messageWindow.appendChild(suggestionsDiv);
+    //     messageWindow.scrollTop = messageWindow.scrollHeight;
+    // }
+    let selectedServiceCategory = '';
+
+    function displayServiceOptions() {
+        // CORS proxy URL
+        const PROXY_URL = 'https://cors-anywhere.herokuapp.com/';
+        // API endpoint
+        const API_URL = `${PROXY_URL}https://crm-2.es/api/oficios`;
+    
+        // Headers including the API Key
+        const headers = {
+            'API-Key': '1954952eff1c76fbe2953b157502754fdbdcaffa'
+        };
+    
+        // Fetching data using the CORS proxy
+        fetch(API_URL, { headers })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(oficios => {
+            // Remove the previous dropdown if it exists
+            const existingDropdown = document.getElementById('service-dropdown');
+            if (existingDropdown) {
+                existingDropdown.remove();
+            }
+    
+            // Check if data is valid and has items
+            if (oficios && oficios.length > 0) {
+                // Create and append the dropdown with actual data
+                const dropdown = createServiceDropdown(oficios);
+                messageWindow.appendChild(dropdown);
+                messageWindow.scrollTop = messageWindow.scrollHeight;
+            } else {
+                // Handle the case when the API returns an empty list
+                console.error('The API returned an empty list of oficios.');
+                displayBotMessage('Lo sentimos, no hay servicios disponibles en este momento.');
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching data:', error);
         });
-        
-        messageWindow.appendChild(suggestionsDiv);
+    }
+
+    
+    
+    function displayBotMessage(message) {
+        const botDiv = document.createElement('div');
+        botDiv.textContent = message;
+        botDiv.classList.add('bot-message');
+        messageWindow.appendChild(botDiv);
         messageWindow.scrollTop = messageWindow.scrollHeight;
     }
-    let selectedServiceCategory = '';
-    // Function to handle service selection
-    function handleServiceSelection(selectedButton) {
-        selectedServiceCategory = selectedButton.textContent;
-
-        
-        // Hide all other buttons except the one clicked
-        const buttonsContainer = document.getElementById('service-suggestions');
-        Array.from(buttonsContainer.children).forEach(function(button) {
-            if (button !== selectedButton) {
-                button.style.display = 'none';
-            }
-        });
-        selectedButton.classList.add('selected-service-button');
-        askForClientDetails();
-    }
-   
     
-    // Function to simulate fetching professional info
-    function fetchProfessional() {
-        // Instead of directly calling the external API, call the Flask proxy endpoint
-        const apiUrl = '/proxy'; // Flask server endpoint that acts as a proxy
+    function createServiceDropdown(oficios) {
+        const select = document.createElement('select');
+        select.id = 'service-dropdown';
+        select.className = 'service-dropdown';
+    
+        // No default option appended here
+    
+        // Populate dropdown with options
+        oficios.forEach(oficio => {
+            const option = document.createElement('option');
+            option.value = oficio.oficio_id;
+            option.textContent = oficio.oficio_descripcion;
+            select.appendChild(option);
+        });
+    
+        // Event listener for selection
+        select.addEventListener('change', handleServiceSelection);
+        return select;
+    }
+    function initializeServiceSelection() {
+    displayBotMessage("Hola, por favor seleccione un servicio de la lista:");
+    displayServiceOptions(); // This function should append the dropdown and call initializeDropdownSearch
+    }
+
+    initializeServiceSelection(); // Call this at the appropriate time to set up your chat interface
+    
+    
+    
+    // Call this function where you want to display the message and the dropdown
+    function initializeServiceSelection() {
+        // Display a bot message above the dropdown
+        displayBotMessage("Hola, seleccione uno de los servicios de la lista.");
+    
+        // Then display the dropdown below the message
+        displayServiceOptions(); // Make sure this function calls createServiceDropdown and initializeDropdownSearch
+    }
+    
+   
+
+    // Function to handle service selection
+    function handleServiceSelection() {
+        const dropdown = document.getElementById('service-dropdown');
+        const selectedOption = dropdown.options[dropdown.selectedIndex];
+        
+        if (selectedOption && selectedOption.value) {
+            selectedServiceCategory = selectedOption.text;
+            selectedOficioId = selectedOption.value; // Store the selected oficio_id globally
+            askForClientDetails(); // You can call fetchProfessional here or elsewhere depending on your flow
+        }
+   
+    }
+    let selectedOficioId = null;
+
+    function fetchProfessional(postalCode) {
+        // Make sure to validate postalCode and selectedOficioId before using them
+        // Validate the postalCode, for example, check if it's a string and not empty
+        if (!postalCode || typeof postalCode !== 'string') {
+            console.error('Invalid postal code');
+            displayBotMessage('El código postal proporcionado no es válido.');
+            return;
+        }
+
+        // Validate the selectedOficioId, for example, check if it's not null
+        if (!selectedOficioId) {
+            console.error('No service has been selected');
+            displayBotMessage('No se ha seleccionado ningún servicio.');
+            return;
+        }
+
+        // Prepare the API URL and options for the fetch call
+        const apiUrl = '/proxy'; // The endpoint in your Flask app that acts as a proxy
         const fetchOptions = {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                codigo_postal: '28022', // The postal code
-                oficio_id: '149' // The craft ID
+                codigo_postal: postalCode,
+                oficio_id: selectedOficioId // Use the selected oficio_id from the dropdown
             })
         };
 
+        // Perform the fetch call to the proxy endpoint
         fetch(apiUrl, fetchOptions)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok: ' + response.statusText);
-                }
-                return response.json();
-            })
-            .then(data => {
-                // Check if the API response has technicians data
-                if (data && data.length > 0) {
-                    // Pick a random technician from the list
-                    const randomIndex = Math.floor(Math.random() * data.length);
-                    const technician = data[randomIndex];
-                    const contactInfo = `Contacte a ${technician.tecnico_nombre} en el teléfono ${technician.tecnico_telefono} para servicios de ${selectedServiceCategory}.`;
-                    displayBotMessage(contactInfo); // Display the random technician's contact info
-                } else {
-                    displayBotMessage('Lo sentimos, no pudimos encontrar un técnico en este momento.');
-                }
-            })
-            .catch(error => {
-                console.error('Hubo un problema con la operación fetch:', error);
+        .then(response => {
+            // Check if the response from the proxy is ok (status in the range 200-299)
+            if (!response.ok) {
+                throw new Error('Network response was not ok: ' + response.statusText);
+            }
+            // Parse the response as JSON
+            return response.json();
+        })
+        .then(data => {
+            // Check if the API response has technicians data
+            if (data && data.length > 0) {
+                // Pick a random technician from the list
+                const randomIndex = Math.floor(Math.random() * data.length);
+                const technician = data[randomIndex];
+                // Construct a message with the technician's information
+                const contactInfo = `Contacte a ${technician.tecnico_nombre} en el teléfono ${technician.tecnico_telefono} para servicios de ${selectedServiceCategory}.`;
+                // Display the technician's contact info in the chatbot
+                displayBotMessage(contactInfo);
+            } else {
+                // If no technicians are found, inform the user
                 displayBotMessage('Lo sentimos, no pudimos encontrar un técnico en este momento.');
-            });
+            }
+        })
+        .catch(error => {
+            // Log and inform the user of any errors during the fetch call
+            console.error('Hubo un problema con la operación fetch:', error);
+            displayBotMessage('Lo sentimos, no pudimos encontrar un técnico en este momento.');
+        });
     }
 
-// This function would be called after the user details have been successfully submitted.
+
     
     function askForClientDetails() {
         const detailMessage = displayBotMessage("Por favor proporcione sus datos.", true);
@@ -190,7 +300,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Function to submit client details
+    let selectedServiceId = null;
+
     function submitClientDetails() {
+        // Validation to check if all form fields are filled
         if (!document.getElementById('client-name').value || 
             !document.getElementById('client-number').value || 
             !document.getElementById('client-address').value || 
@@ -204,9 +317,9 @@ document.addEventListener('DOMContentLoaded', function() {
             name: document.getElementById('client-name').value,
             number: document.getElementById('client-number').value,
             address: document.getElementById('client-address').value,
-            postcode: document.getElementById('client-postcode').value, 
+            postcode: document.getElementById('client-postcode').value,
             description: document.getElementById('client-description').value,
-            serviceCategory: selectedServiceCategory
+            serviceCategory: selectedServiceCategory // You already have this value from dropdown
         };
     
         // AJAX request to send data to server
@@ -218,7 +331,8 @@ document.addEventListener('DOMContentLoaded', function() {
             success: function(response) {
                 displayBotMessage(response.message);
                 removeClientDetailForm();
-                fetchProfessional(selectedServiceCategory); // Fetch the professional's contact after confirmation message
+                // Now, call fetchProfessional with both the postcode and selectedServiceId
+                fetchProfessional(clientDetails.postcode, selectedServiceId);
             },
             error: function() {
                 displayBotMessage("Lo sentimos, hubo un error al procesar tus datos.");
@@ -292,4 +406,7 @@ document.addEventListener('DOMContentLoaded', function() {
             messageWindow.removeChild(typingIndicatorContainer);
         }
     }
+    // At the end of chatbot.js
+    displayServiceOptions(); // Call it manually to check if the dropdown appears
+    
 });
