@@ -55,17 +55,15 @@ document.addEventListener('DOMContentLoaded', function() {
     let selectedServiceCategory = '';
 
     function displayServiceOptions() {
-        // CORS proxy URL
-        const PROXY_URL = 'https://cors-anywhere.herokuapp.com/';
-        // API endpoint
-        const API_URL = `${PROXY_URL}https://crm-2.es/api/oficios`;
+        // New API endpoint
+        const API_URL = 'https://crm-2.es/api/professions';
     
         // Headers including the API Key
         const headers = {
             'API-Key': '1954952eff1c76fbe2953b157502754fdbdcaffa'
         };
     
-        // Fetching data using the CORS proxy
+        // Fetching data directly from the new API endpoint
         fetch(API_URL, { headers })
         .then(response => {
             if (!response.ok) {
@@ -73,22 +71,18 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             return response.json();
         })
-        .then(oficios => {
-            // Remove the previous dropdown if it exists
+        .then(professions => {
             const existingDropdown = document.getElementById('service-dropdown');
             if (existingDropdown) {
                 existingDropdown.remove();
             }
     
-            // Check if data is valid and has items
-            if (oficios && oficios.length > 0) {
-                // Create and append the dropdown with actual data
-                const dropdown = createServiceDropdown(oficios);
+            if (professions && professions.length > 0) {
+                const dropdown = createServiceDropdown(professions);
                 messageWindow.appendChild(dropdown);
                 messageWindow.scrollTop = messageWindow.scrollHeight;
             } else {
-                // Handle the case when the API returns an empty list
-                console.error('The API returned an empty list of oficios.');
+                console.error('The API returned an empty list of professions.');
                 displayBotMessage('Lo sentimos, no hay servicios disponibles en este momento.');
             }
         })
@@ -106,25 +100,45 @@ document.addEventListener('DOMContentLoaded', function() {
         messageWindow.appendChild(botDiv);
         messageWindow.scrollTop = messageWindow.scrollHeight;
     }
+    function showClientDetailForm() {
+        // Clear existing form if it exists
+        removeClientDetailForm();
     
-    function createServiceDropdown(oficios) {
-        const select = document.createElement('select');
-        select.id = 'service-dropdown';
-        select.className = 'service-dropdown';
+        // Display the form
+        askForClientDetails();
+    }
     
-        // No default option appended here
+    let selectedOficioId = '';
+
+    function createServiceDropdown(professions) {
+        const dropdown = document.createElement('select');
+        dropdown.id = 'service-dropdown';
     
-        // Populate dropdown with options
-        oficios.forEach(oficio => {
-            const option = document.createElement('option');
-            option.value = oficio.oficio_id;
-            option.textContent = oficio.oficio_descripcion;
-            select.appendChild(option);
+        // Add a default option to prompt the user to select
+        const defaultOption = document.createElement('option');
+        defaultOption.textContent = 'Por favor, seleccione una profesión';
+        defaultOption.disabled = true;
+        defaultOption.selected = true;
+        dropdown.appendChild(defaultOption);
+    
+        professions.forEach(profession => {
+            if (profession.oficio_id && profession.oficio_descripcion) {
+                const option = document.createElement('option');
+                option.value = profession.oficio_id;
+                option.textContent = profession.oficio_descripcion; // Correctly using oficio_descripcion
+                dropdown.appendChild(option);
+            }
         });
     
-        // Event listener for selection
-        select.addEventListener('change', handleServiceSelection);
-        return select;
+        // When the dropdown changes, display the client details form
+        dropdown.addEventListener('change', function() {
+            selectedOficioId = this.value;
+            if(this.selectedIndex !== 0) { // Check if the default option is not selected
+                askForClientDetails(); // Call the function that displays the form
+            }
+        });
+    
+        return dropdown;
     }
     function initializeServiceSelection() {
     displayBotMessage("Hola, por favor seleccione un servicio de la lista:");
@@ -158,45 +172,40 @@ document.addEventListener('DOMContentLoaded', function() {
         }
    
     }
-    let selectedOficioId = null;
 
     function fetchProfessional(postalCode) {
-        // Make sure to validate postalCode and selectedOficioId before using them
-        // Validate the postalCode, for example, check if it's a string and not empty
+        // Validate the postalCode
         if (!postalCode || typeof postalCode !== 'string') {
             console.error('Invalid postal code');
             displayBotMessage('El código postal proporcionado no es válido.');
             return;
         }
-
-        // Validate the selectedOficioId, for example, check if it's not null
+    
+        // Validate the selectedOficioId
         if (!selectedOficioId) {
             console.error('No service has been selected');
             displayBotMessage('No se ha seleccionado ningún servicio.');
             return;
         }
-
-        // Prepare the API URL and options for the fetch call
-        const apiUrl = '/proxy'; // The endpoint in your Flask app that acts as a proxy
+    
+        // API endpoint with query parameters
+        const apiUrl = `https://crm-2.es/api/technicians/available?codigo_postal=${encodeURIComponent(postalCode)}&oficio_id=${encodeURIComponent(selectedOficioId)}`;
+    
+        // Fetch options with the API key in the header
         const fetchOptions = {
-            method: 'POST',
+            method: 'GET',
             headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                codigo_postal: postalCode,
-                oficio_id: selectedOficioId // Use the selected oficio_id from the dropdown
-            })
+                'API-Key': '1954952eff1c76fbe2953b157502754fdbdcaffa',
+                // Include any other headers your API requires
+            }
         };
-
-        // Perform the fetch call to the proxy endpoint
+    
+        // Fetching data from the API endpoint
         fetch(apiUrl, fetchOptions)
         .then(response => {
-            // Check if the response from the proxy is ok (status in the range 200-299)
             if (!response.ok) {
-                throw new Error('Network response was not ok: ' + response.statusText);
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
-            // Parse the response as JSON
             return response.json();
         })
         .then(data => {
@@ -215,9 +224,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         })
         .catch(error => {
-            // Log and inform the user of any errors during the fetch call
-            console.error('Hubo un problema con la operación fetch:', error);
-            displayBotMessage('Lo sentimos, no pudimos encontrar un técnico en este momento.');
+            console.error('Error fetching available technicians:', error);
+            displayBotMessage('Lo sentimos, hubo un error al buscar técnicos disponibles.');
         });
     }
 

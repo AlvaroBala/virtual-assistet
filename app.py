@@ -42,51 +42,24 @@ openai.api_base = os.getenv("openai.api_base")
 openai.api_version = "2023-03-15-preview"
 # Variable to store the current service category
 current_category = None
-
-
-@app.route('/proxy', methods=['POST'])
-def proxy():
-    external_api_url = 'https://crm-2.es/api/tecnicos-disponibles'
-    json_data = request.get_json()
-    postal_code = json_data.get('codigo_postal', 'default_postal_code') # Default value if not provided
-    json_data['codigo_postal'] = postal_code
-
-    response = requests.post(external_api_url, json=json_data, headers={
+@app.route('/fetch_technicians', methods=['GET'])
+def fetch_technicians():
+    codigo_postal = request.args.get('codigo_postal')
+    oficio_id = request.args.get('oficio_id')
+    if not codigo_postal or not oficio_id:
+        return jsonify({'error': 'Missing codigo_postal or oficio_id'}), 400
+    
+    api_url = f"https://crm-2.es/api/technicians/available?codigo_postal={codigo_postal}&oficio_id={oficio_id}"
+    headers = {
         'API-Key': '1954952eff1c76fbe2953b157502754fdbdcaffa',
-        'Content-Type': 'application/json'
-    })
-    return jsonify(response.json())
+    }
 
-@app.route('/custom_proxy', methods=['POST'])
-def custom_proxy():
-    # The external API URL you're sending the request to
-    external_api_url = 'https://crm-2.es/api/api/oficios'
-
-    # Extract the JSON data from the incoming POST request
-    json_data = request.get_json()
-
-    # Get 'oficio_id' and 'oficio_description' from the JSON data or set default values
-    oficio_id = json_data.get('oficio_id', 'default_oficio_id')
-    oficio_description = json_data.get('oficio_description', 'default_description')
-
-    # Update the json_data with 'oficio_id' and 'oficio_description' if needed
-    json_data['oficio_id'] = oficio_id
-    json_data['oficio_description'] = oficio_description
-
-    # Make a POST request to the external API with the JSON data and required headers
-    response = requests.post(external_api_url, json=json_data, headers={
-        'API-Key': '1954952eff1c76fbe2953b157502754fdbdcaffa',
-        'Content-Type': 'application/json'
-    })
-
-    # Return the JSON response from the external API to the client
-    return jsonify(response.json())
-@app.after_request
-def after_request(response):
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
-    return response
+    try:
+        response = requests.get(api_url, headers=headers)
+        response.raise_for_status()
+        return jsonify(response.json())
+    except requests.exceptions.HTTPError as err:
+        return jsonify({'error': str(err)}), err.response.status_code
 
 def send_email(to_address, client_details):
     print(client_details) 
