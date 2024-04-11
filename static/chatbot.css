@@ -143,7 +143,7 @@
 }
 
 #message-window {
-    height: 350px; /* Increased height */
+    height: 370px; /* Increased height */
     overflow-y: auto;
     padding: 20px; /* More padding for spacious feeling */
     background-color: #ffffff; /* White background for a clean look */
@@ -442,3 +442,8 @@
     border-radius: 4px;
 }
 
+
+
+#service-dropdown {
+    margin-bottom: 7px; /* Adjust the value as needed */
+}

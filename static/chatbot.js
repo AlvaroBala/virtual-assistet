@@ -35,23 +35,7 @@ document.addEventListener('DOMContentLoaded', function() {
             chatToggle.style.display = 'block';
         }
     }
-    // Function to display service suggestions
-    // function displayServiceSuggestions() {
-    //     const suggestions = ["Cerrajero", "Calderas", "Aire Acondicionado", "Fontanero", "Calefacción", "Persianas"];
-    //     const suggestionsDiv = document.createElement('div');
-    //     suggestionsDiv.id = 'service-suggestions';
-        
-    //     suggestions.forEach(function(suggestion) {
-    //         const button = document.createElement('button');
-    //         button.textContent = suggestion;
-    //         button.classList.add('service-button');
-    //         button.onclick = function() { handleServiceSelection(button); };
-    //         suggestionsDiv.appendChild(button);
-    //     });
-        
-    //     messageWindow.appendChild(suggestionsDiv);
-    //     messageWindow.scrollTop = messageWindow.scrollHeight;
-    // }
+
     let selectedServiceCategory = '';
 
     function displayServiceOptions() {
@@ -132,8 +116,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
         // When the dropdown changes, display the client details form
         dropdown.addEventListener('change', function() {
-            selectedOficioId = this.value;
-            if(this.selectedIndex !== 0) { // Check if the default option is not selected
+            let selectedIndex = this.selectedIndex;
+            if (selectedIndex !== 0) { // Make sure a non-default option is selected
+                let selectedOption = this.options[selectedIndex];
+                selectedServiceCategory = selectedOption.textContent; // Get the oficio_descripcion
+                selectedOficioId = selectedOption.value; // Also get the oficio_id
                 askForClientDetails(); // Call the function that displays the form
             }
         });
@@ -327,7 +314,7 @@ document.addEventListener('DOMContentLoaded', function() {
             address: document.getElementById('client-address').value,
             postcode: document.getElementById('client-postcode').value,
             description: document.getElementById('client-description').value,
-            serviceCategory: selectedServiceCategory // You already have this value from dropdown
+            serviceCategory: selectedServiceCategory
         };
     
         // AJAX request to send data to server

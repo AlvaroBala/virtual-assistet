@@ -60,6 +60,11 @@ def fetch_technicians():
         return jsonify(response.json())
     except requests.exceptions.HTTPError as err:
         return jsonify({'error': str(err)}), err.response.status_code
+@app.route('/submit_client_details', methods=['POST'])
+def submit_client_details():
+    client_details = request.json
+    email_status = send_email("vortexst109@gmail.com", client_details)
+    return jsonify({'message': email_status})
 
 def send_email(to_address, client_details):
     print(client_details) 
@@ -73,7 +78,7 @@ def send_email(to_address, client_details):
         message['To'] = to_address
         
         # Get service category from client details and set it as email subject
-        service_category = client_details['serviceCategory']
+        service_category = client_details.get('serviceCategory', 'Unknown Service') # Fallback to 'Unknown Service'
         message['Subject'] = f'Request for: {service_category}'
         
         # Create the email body, including the description and postal code
@@ -108,15 +113,12 @@ greetings = {
     'hey': 'Hey! How can I help you?'
 }
 
+
 @app.route('/')
 def index():
     return render_template('chatbot.html')
 
-@app.route('/submit_client_details', methods=['POST'])
-def submit_client_details():
-    client_details = request.json
-    email_status = send_email("vortexst109@gmail.com", client_details)
-    return jsonify({'message': email_status})
+
 
 @app.route('/chatbot', methods=['POST'])
 def chatbot():
