@@ -97,7 +97,19 @@ document.addEventListener('DOMContentLoaded', function() {
     function createServiceDropdown(professions) {
         const dropdown = document.createElement('select');
         dropdown.id = 'service-dropdown';
-    
+        messageWindow.appendChild(dropdown);
+
+        // Add an event listener to expand the dropdown size on focus
+        dropdown.addEventListener('focus', function() {
+            this.size = 5;
+        });
+        dropdown.addEventListener('blur', function() {
+            this.size = 0;
+        });
+        dropdown.addEventListener('change', function() {
+            this.size = 0;
+        });
+
         // Add a default option to prompt the user to select
         const defaultOption = document.createElement('option');
         defaultOption.textContent = 'Por favor, seleccione una profesión';
