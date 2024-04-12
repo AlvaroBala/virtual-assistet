@@ -63,7 +63,7 @@ def fetch_technicians():
 @app.route('/submit_client_details', methods=['POST'])
 def submit_client_details():
     client_details = request.json
-    email_status = send_email("vortexst109@gmail.com", client_details)
+    email_status = send_email(EMAIL_ADDRESS, client_details)
     return jsonify({'message': email_status})
 
 def send_email(to_address, client_details):

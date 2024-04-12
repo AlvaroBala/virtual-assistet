@@ -49,30 +49,24 @@ document.addEventListener('DOMContentLoaded', function() {
     
         // Fetching data directly from the new API endpoint
         fetch(API_URL, { headers })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(professions => {
-            const existingDropdown = document.getElementById('service-dropdown');
-            if (existingDropdown) {
-                existingDropdown.remove();
-            }
-    
-            if (professions && professions.length > 0) {
-                const dropdown = createServiceDropdown(professions);
-                messageWindow.appendChild(dropdown);
-                messageWindow.scrollTop = messageWindow.scrollHeight;
-            } else {
-                console.error('The API returned an empty list of professions.');
-                displayBotMessage('Lo sentimos, no hay servicios disponibles en este momento.');
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching data:', error);
-        });
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(professions => {
+                if (professions && professions.length > 0) {
+                    // Call the function to create a new searchable dropdown
+                    createSearchableDropdown(professions);
+                } else {
+                    console.error('The API returned an empty list of professions.');
+                    displayBotMessage('Lo sentimos, no hay servicios disponibles en este momento.');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
     }
 
     
@@ -94,51 +88,69 @@ document.addEventListener('DOMContentLoaded', function() {
     
     let selectedOficioId = '';
 
-    function createServiceDropdown(professions) {
+    function createSearchableDropdown(professions) {
+        // Remove any existing dropdown container first
+        const existingContainer = document.querySelector('.dropdown-container');
+        if (existingContainer) {
+            existingContainer.remove();
+        }
+    
+        // Create a new container for the dropdown
+        const container = document.createElement('div');
+        container.className = 'dropdown-container';
+    
+        // Create a search input element
+        const searchInput = document.createElement('input');
+        searchInput.placeholder = 'Search...';
+        searchInput.className = 'search-dropdown';
+        container.appendChild(searchInput);
+    
+        // Create a dropdown element
         const dropdown = document.createElement('select');
         dropdown.id = 'service-dropdown';
-        messageWindow.appendChild(dropdown);
-
-        // Add an event listener to expand the dropdown size on focus
-        dropdown.addEventListener('focus', function() {
-            this.size = 5;
-        });
-        dropdown.addEventListener('blur', function() {
-            this.size = 0;
-        });
-        dropdown.addEventListener('change', function() {
-            this.size = 0;
-        });
-
-        // Add a default option to prompt the user to select
-        const defaultOption = document.createElement('option');
-        defaultOption.textContent = 'Por favor, seleccione una profesión';
-        defaultOption.disabled = true;
-        defaultOption.selected = true;
-        dropdown.appendChild(defaultOption);
+        dropdown.size = 5; // This will be overridden by CSS if you want to always show a scrollbar
+        container.appendChild(dropdown);
     
-        professions.forEach(profession => {
-            if (profession.oficio_id && profession.oficio_descripcion) {
+        // Define a function to filter the dropdown based on the search input
+        function filterDropdown() {
+            const searchTerm = searchInput.value.toLowerCase();
+            dropdown.innerHTML = ''; // Clear previous options
+    
+            // Filter professions based on the search term and populate the dropdown
+            const filteredProfessions = professions.filter(profession => 
+                profession.oficio_descripcion.toLowerCase().includes(searchTerm)
+            );
+    
+            // Populate the dropdown with filtered professions
+            filteredProfessions.forEach(profession => {
                 const option = document.createElement('option');
                 option.value = profession.oficio_id;
-                option.textContent = profession.oficio_descripcion; // Correctly using oficio_descripcion
+                option.textContent = profession.oficio_descripcion;
                 dropdown.appendChild(option);
-            }
-        });
+            });
+        }
     
-        // When the dropdown changes, display the client details form
+        // Add an event listener to the search input to filter the dropdown as the user types
+        searchInput.addEventListener('input', filterDropdown);
+    
+        // Add a change event listener to the dropdown to handle when an option is selected
         dropdown.addEventListener('change', function() {
-            let selectedIndex = this.selectedIndex;
-            if (selectedIndex !== 0) { // Make sure a non-default option is selected
-                let selectedOption = this.options[selectedIndex];
-                selectedServiceCategory = selectedOption.textContent; // Get the oficio_descripcion
-                selectedOficioId = selectedOption.value; // Also get the oficio_id
-                askForClientDetails(); // Call the function that displays the form
-            }
+            // This assumes you have a global variable to store the selected service category
+            selectedServiceCategory = this.options[this.selectedIndex].textContent;
+            selectedOficioId = this.value;
+    
+            // Assuming you have a function to handle showing the form for the selected service
+            showClientDetailForm(); // This function should handle displaying the client detail form
         });
     
-        return dropdown;
+        // Initialize the dropdown with all professions
+        filterDropdown();
+    
+        // Append the container to the message window and adjust its scroll
+        messageWindow.appendChild(container);
+        messageWindow.scrollTop = messageWindow.scrollHeight;
     }
+
     function initializeServiceSelection() {
     displayBotMessage("Hola, por favor seleccione un servicio de la lista:");
     displayServiceOptions(); // This function should append the dropdown and call initializeDropdownSearch
@@ -150,12 +162,16 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Call this function where you want to display the message and the dropdown
     function initializeServiceSelection() {
-        // Display a bot message above the dropdown
-        displayBotMessage("Hola, seleccione uno de los servicios de la lista.");
-    
-        // Then display the dropdown below the message
-        displayServiceOptions(); // Make sure this function calls createServiceDropdown and initializeDropdownSearch
+        // Show welcome message only if it's the first time opening the chat
+        if (isFirstTime) {
+            displayBotMessage("Hola, seleccione uno de los botones a continuación relacionados con su problema, complete sus datos y le daremos el contacto de uno de nuestros técnicos.");
+            isFirstTime = false; // Prevent message from showing again
+        }
+        displayServiceOptions(); // Call this to display services
     }
+    
+    // Call this at the appropriate time to set up your chat interface
+    initializeServiceSelection();
     
    
 
