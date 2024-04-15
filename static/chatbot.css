@@ -442,31 +442,31 @@
     border-radius: 4px;
 }
 
-
+/* dropdown */
 
 #service-dropdown {
-    margin-bottom: 7px; /* Adjust the value as needed */
-    height: 30px;
+    margin-bottom: 7px; 
+
 }
 #service-dropdown {
-    border: 2px solid #007bff; /* Blue border */
-    border-radius: 4px; /* Slightly rounded corners for a modern look */
-    padding: 5px 10px; /* Padding inside the dropdown */
-    background-color: #fff; /* White background for the dropdown */
-    width: 100%; /* Full width of its container */
-    box-sizing: border-box; /* Padding and border included in the width */
-    -webkit-appearance: none; /* Remove the default arrow from iOS */
-    -moz-appearance: none; /* Remove the default arrow from Firefox */
-    appearance: none; /* Remove the default arrow from modern browsers */
-    position: relative; /* Position set for pseudo-element positioning */
+    border: 2px solid #007bff; 
+    border-radius: 4px; 
+    padding: 5px 10px; 
+    background-color: #fff; 
+    width: 100%; 
+    box-sizing: border-box; 
+    -webkit-appearance: none; 
+    -moz-appearance: none; 
+    appearance: none; 
+    position: relative; 
 }
 
 #service-dropdown:focus {
-    outline: none; /* Remove outline on focus */
-    border-color: #0056b3; /* Darker blue border on focus */
+    outline: none; 
+    border-color: #0056b3; 
 }
 
-/* Pseudo-element for custom dropdown arrow */
+
 #service-dropdown::after {
     content: '';
     position: absolute;
@@ -477,25 +477,61 @@
     height: 0;
     border-left: 5px solid transparent;
     border-right: 5px solid transparent;
-    border-top: 5px solid #007bff; /* Arrow color */
-    pointer-events: none; /* Clicks should pass through */
+    border-top: 5px solid #007bff; 
+    pointer-events: none; 
 }
 
-/* Option styling */
+
 #service-dropdown option {
-    padding: 5px; /* Padding for options */
-    background-color: #fff; /* White background for the options */
+    padding: 5px; 
+    background-color: #fff; 
 }
 
 #service-dropdown option:checked,
 #service-dropdown option:hover,
 #service-dropdown option:focus {
-    background-color: #007bff; /* Blue background for the selected/hovered option */
-    color: #fff; /* White text color when option is selected/hovered */
+    background-color: #007bff; 
+    color: #fff; 
 }
 #service-dropdown:focus {
-    height: auto; /* Let the dropdown adjust its height based on the size attribute */
-    overflow-y: auto; /* Allow scrolling */
-  }
+    height: auto; 
+    overflow-y: auto; 
+}
 
-  
+.search-dropdown {
+    transition: box-shadow 0.3s, border-color 0.3s; /* Smooth transitions for focus and hover */
+    position: relative; /* Position relative to place icons */
+    padding: 10px 35px 10px 10px; /* Padding to make space for icons */
+}
+
+.search-dropdown::placeholder {
+    color: #a8a8a8; /* Subtle color for placeholder text */
+    opacity: 1; /* Full visibility for placeholder text */
+}
+
+.search-dropdown:focus {
+    outline: none; /* Removes the default focus outline */
+    box-shadow: 0 0 8px rgba(0,123,255,.25); /* Adds a glow effect on focus */
+    border-color: #80bdff; /* Changes the border color on focus */
+}
+
+/* Icon inside the input */
+.search-dropdown + .icon {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    color: #6c757d; /* Icon color */
+}
+
+/* Clear button styling */
+.search-dropdown + .icon + .clear-btn {
+    position: absolute;
+    top: 50%;
+    right: 35px;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: #6c757d; /* Button color */
+}

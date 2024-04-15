@@ -105,6 +105,24 @@ document.addEventListener('DOMContentLoaded', function() {
         searchInput.className = 'search-dropdown';
         container.appendChild(searchInput);
     
+        // Create a search icon and append it to the container
+        const searchIcon = document.createElement('span');
+        searchIcon.className = 'search-icon fa fa-search';
+        container.appendChild(searchIcon);
+    
+        // Create a clear button and append it to the container
+        const clearButton = document.createElement('button');
+        clearButton.className = 'clear-btn';
+        clearButton.textContent = 'Claro';
+        clearButton.type = 'button';
+        container.appendChild(clearButton);
+    
+        // Event listener for the clear button
+        clearButton.addEventListener('click', function() {
+            searchInput.value = '';
+            filterDropdown();
+        });
+    
         // Create a dropdown element
         const dropdown = document.createElement('select');
         dropdown.id = 'service-dropdown';
@@ -117,7 +135,7 @@ document.addEventListener('DOMContentLoaded', function() {
             dropdown.innerHTML = ''; // Clear previous options
     
             // Filter professions based on the search term and populate the dropdown
-            const filteredProfessions = professions.filter(profession => 
+            const filteredProfessions = professions.filter(profession =>
                 profession.oficio_descripcion.toLowerCase().includes(searchTerm)
             );
     
