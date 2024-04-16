@@ -444,94 +444,111 @@
 
 /* dropdown */
 
-#service-dropdown {
-    margin-bottom: 7px; 
-
+/* General styling for the dropdown container */
+.dropdown-container {
+    position: relative;
+    width: 100%;
+    font-family: Arial, sans-serif;
 }
+
+/* Style for the dropdown select element */
 #service-dropdown {
-    border: 2px solid #007bff; 
-    border-radius: 4px; 
-    padding: 5px 10px; 
-    background-color: #fff; 
-    width: 100%; 
-    box-sizing: border-box; 
-    -webkit-appearance: none; 
-    -moz-appearance: none; 
-    appearance: none; 
-    position: relative; 
+    width: 100%;
+    padding: 5px 10px;
+    margin-bottom: 7px;
+    border: 2px solid #007bff;
+    border-radius: 4px;
+    background-color: #fff;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    position: relative;
+    transition: height 0.3s, opacity 0.3s; /* Smooth transition for dropdown */
 }
 
 #service-dropdown:focus {
-    outline: none; 
-    border-color: #0056b3; 
+    outline: none;
+    border-color: #0056b3;
+    height: auto;
+    overflow-y: auto;
 }
 
+/* Styling for the dropdown options */
+#service-dropdown option {
+    padding: 5px;
+    background-color: #fff;
+}
 
+#service-dropdown option:hover,
+#service-dropdown option:focus {
+    background-color: #0056b3;
+    color: #fff;
+}
+
+/* Search input styling */
+.search-dropdown {
+    padding: 10px 35px 10px 10px; /* Space for the clear button */
+    border: 2px solid #007bff;
+    border-radius: 4px;
+    width: calc(100% - 50px); /* Reduce width to make space for the clear button */
+    transition: box-shadow 0.3s, border-color 0.3s; /* Smooth transitions for focus and hover */
+}
+
+.search-dropdown::placeholder {
+    color: #a8a8a8;
+}
+
+.search-dropdown:focus {
+    outline: none;
+    box-shadow: 0 0 8px rgba(0,123,255,.25);
+    border-color: #80bdff;
+}
+
+/* Clear button styling */
+.clear-btn {
+    padding: 0 10px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: #6c757d;
+    transition: color 0.3s; /* Transition for hover effect */
+}
+
+.clear-btn:hover {
+    color: #0056b3;
+}
+
+/* Search icon styling (assuming you have FontAwesome included) */
+.search-icon {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    color: #6c757d;
+    cursor: pointer;
+}
+
+/* Adjustments for the dropdown arrow */
 #service-dropdown::after {
     content: '';
     position: absolute;
     top: 50%;
     right: 10px;
     transform: translateY(-50%);
-    width: 0;
-    height: 0;
     border-left: 5px solid transparent;
     border-right: 5px solid transparent;
-    border-top: 5px solid #007bff; 
-    pointer-events: none; 
+    border-top: 5px solid #007bff;
+    pointer-events: none;
 }
 
-
-#service-dropdown option {
-    padding: 5px; 
-    background-color: #fff; 
+/* Container to wrap search input and clear button */
+.search-dropdown-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-#service-dropdown option:checked,
-#service-dropdown option:hover,
-#service-dropdown option:focus {
-    background-color: #007bff; 
-    color: #fff; 
-}
-#service-dropdown:focus {
-    height: auto; 
-    overflow-y: auto; 
-}
-
-.search-dropdown {
-    transition: box-shadow 0.3s, border-color 0.3s; /* Smooth transitions for focus and hover */
-    position: relative; /* Position relative to place icons */
-    padding: 10px 35px 10px 10px; /* Padding to make space for icons */
-}
-
-.search-dropdown::placeholder {
-    color: #a8a8a8; /* Subtle color for placeholder text */
-    opacity: 1; /* Full visibility for placeholder text */
-}
-
-.search-dropdown:focus {
-    outline: none; /* Removes the default focus outline */
-    box-shadow: 0 0 8px rgba(0,123,255,.25); /* Adds a glow effect on focus */
-    border-color: #80bdff; /* Changes the border color on focus */
-}
-
-/* Icon inside the input */
-.search-dropdown + .icon {
-    position: absolute;
-    top: 50%;
-    right: 10px;
-    transform: translateY(-50%);
-    color: #6c757d; /* Icon color */
-}
-
-/* Clear button styling */
-.search-dropdown + .icon + .clear-btn {
-    position: absolute;
-    top: 50%;
-    right: 35px;
-    transform: translateY(-50%);
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    color: #6c757d; /* Button color */
+/* Ensuring the clear button does not get hidden */
+.clear-btn {
+    z-index: 10;
 }

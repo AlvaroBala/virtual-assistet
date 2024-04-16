@@ -88,6 +88,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     let selectedOficioId = '';
 
+    
+
     function createSearchableDropdown(professions) {
         // Remove any existing dropdown container first
         const existingContainer = document.querySelector('.dropdown-container');
@@ -170,7 +172,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function initializeServiceSelection() {
-    displayBotMessage("Hola, por favor seleccione un servicio de la lista:");
     displayServiceOptions(); // This function should append the dropdown and call initializeDropdownSearch
     }
 
