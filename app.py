@@ -13,12 +13,12 @@ from dotenv import load_dotenv
 import smtplib
 from collections import defaultdict 
 from flask import Flask
-from flask_cors import CORS  # type: ignore
+ 
 load_dotenv()
 
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}}) 
+
 
 
 nlp = spacy.load("en_core_web_sm")
@@ -78,14 +78,14 @@ def send_email(to_address, client_details):
         message['To'] = to_address
         
         # Get service category from client details and set it as email subject
-        service_category = client_details.get('serviceCategory', 'Unknown Service') # Fallback to 'Unknown Service'
+        service_category = client_details.get('serviceCategory', 'Unknown Service') 
         message['Subject'] = f'Request for: {service_category}'
         
-        # Create the email body, including the description and postal code
+        
         body = (f"Name: {client_details['name']}\n"
                 f"Number: {client_details['number']}\n"
                 f"Address: {client_details['address']}\n"
-                f"Postal Code: {client_details['postcode']}\n"  # Use 'postcode' key instead of 'postalCode'
+                f"Postal Code: {client_details['postcode']}\n"  
                 f"Description: {client_details['description']}")
         message.attach(MIMEText(body, 'plain'))
 
@@ -126,7 +126,6 @@ def chatbot():
     user_message = request.json['message']
     response = ''
 
-    # If the user's message is one of the service categories, store it
     if user_message.lower() in ["locksmith", "boilers", "ac technician", "plumber"]:
         current_category = user_message.lower()
         response = f'You selected {current_category}. How may I assist you with {current_category}?'
@@ -142,10 +141,7 @@ def get_response(user_message):
 
     # Process the message with spaCy
     doc = nlp(user_message)
-    # Extract keywords
     keywords = [token.text.lower() for token in doc if token.pos_ in ["NOUN", "VERB"] or token.ent_type_]
-
-    # Handle short queries
     if not keywords:
         return "Can you please provide more details?"
 
@@ -155,7 +151,6 @@ def get_response(user_message):
         return "Unable to connect to the database."
 
     try:
-        # Get a response using keywords
         response = get_response_from_keywords(conn, keywords)
         if response:
             return response
@@ -170,7 +165,6 @@ def get_response_from_keywords(conn, keywords):
     cursor = conn.cursor()
     answer_scores = defaultdict(int)
 
-    # If a service category has been set, use it to filter the query
     if current_category:
         query = """
         SELECT f.id, f.answer
