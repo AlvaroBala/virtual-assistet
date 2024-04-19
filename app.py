@@ -9,6 +9,7 @@ import spacy
 import ssl
 import os
 import openai
+import logging
 from dotenv import load_dotenv
 import smtplib
 from collections import defaultdict 
@@ -67,35 +68,29 @@ def submit_client_details():
     return jsonify({'message': email_status})
 
 def send_email(to_address, client_details):
-    print(client_details) 
+    logging.info("Attempting to send email")
     try:
-        # Use a secure SSL context
         context = ssl.create_default_context()
-
-        # Create a new message
         message = MIMEMultipart()
         message['From'] = EMAIL_ADDRESS
         message['To'] = to_address
-        
-        # Get service category from client details and set it as email subject
-        service_category = client_details.get('serviceCategory', 'Unknown Service') 
-        message['Subject'] = f'Request for: {service_category}'
-        
-        
+        message['Subject'] = f"Request for: {client_details.get('serviceCategory', 'Unknown Service')}"
+
         body = (f"Name: {client_details['name']}\n"
                 f"Number: {client_details['number']}\n"
                 f"Address: {client_details['address']}\n"
-                f"Postal Code: {client_details['postcode']}\n"  
-                f"Description: {client_details['description']}")
+                f"Postal Code: {client_details['postcode']}\n"
+                f"Description: {client_details['description']}\n"
+                f"Tecnico Nombre: {client_details.get('technicianName', 'Not available')}\n"
+                f"Tecnico Telefono: {client_details.get('technicianPhone', 'Not available')}")
         message.attach(MIMEText(body, 'plain'))
 
-        # Connect to the Gmail SMTP server and send the email
         with smtplib.SMTP_SSL(EMAIL_HOST, EMAIL_PORT, context=context) as server:
-            server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)  # Use your app-specific password here
+            server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
             server.sendmail(EMAIL_ADDRESS, to_address, message.as_string())
-        return "Tus datos fueron guardados."
+        logging.info("Email sent successfully")
     except Exception as e:
-        print(f"Error sending email: {e}")
+        logging.error("Failed to send email due to: %s", e)
         return "Failed to send email."
     
 def get_db_connection():

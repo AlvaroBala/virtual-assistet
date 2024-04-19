@@ -207,61 +207,40 @@ document.addEventListener('DOMContentLoaded', function() {
    
     }
 
-    function fetchProfessional(postalCode) {
-        // Validate the postalCode
-        if (!postalCode || typeof postalCode !== 'string') {
-            console.error('Invalid postal code');
-            displayBotMessage('El código postal proporcionado no es válido.');
-            return;
-        }
-    
-        // Validate the selectedOficioId
-        if (!selectedOficioId) {
-            console.error('No service has been selected');
-            displayBotMessage('No se ha seleccionado ningún servicio.');
-            return;
-        }
-    
-        // API endpoint with query parameters
+    function fetchProfessional(postalCode, callback) {
         const apiUrl = `https://crm-2.es/api/technicians/available?codigo_postal=${encodeURIComponent(postalCode)}&oficio_id=${encodeURIComponent(selectedOficioId)}`;
-    
-        // Fetch options with the API key in the header
         const fetchOptions = {
             method: 'GET',
             headers: {
                 'API-Key': '1954952eff1c76fbe2953b157502754fdbdcaffa',
-                // Include any other headers your API requires
             }
         };
     
-        // Fetching data from the API endpoint
         fetch(apiUrl, fetchOptions)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            // Check if the API response has technicians data
-            if (data && data.length > 0) {
-                // Pick a random technician from the list
-                const randomIndex = Math.floor(Math.random() * data.length);
-                const technician = data[randomIndex];
-                // Construct a message with the technician's information
-                const contactInfo = `Contacte a ${technician.tecnico_nombre} en el teléfono ${technician.tecnico_telefono} para servicios de ${selectedServiceCategory}.`;
-                // Display the technician's contact info in the chatbot
-                displayBotMessage(contactInfo);
-            } else {
-                // If no technicians are found, inform the user
-                displayBotMessage('Lo sentimos, no pudimos encontrar un técnico en este momento.');
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching available technicians:', error);
-            displayBotMessage('Lo sentimos, hubo un error al buscar técnicos disponibles.');
-        });
-    }
+    .then(response => response.json())
+    .then(data => {
+        if (data && data.length > 0) {
+            const technician = data[Math.floor(Math.random() * data.length)];
+            callback(technician);
+            // Construct a message with the technician's information
+            const contactInfo = `Contacte a ${technician.tecnico_nombre} en el teléfono ${technician.tecnico_telefono} para servicios de ${selectedServiceCategory}.`;
+            // Display the technician's contact info in the chatbot
+            displayBotMessage(contactInfo);
+            hideTypingIndicator(); // Hide the typing indicator
+        } else {
+            // If no technicians are found, inform the user
+            displayBotMessage('Lo sentimos, no hay técnicos disponibles en este momento.');
+            callback(null);
+            hideTypingIndicator(); // Hide the typing indicator
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching technician:', error);
+        displayBotMessage('Lo sentimos, hubo un error al buscar técnicos disponibles.');
+        callback(null);
+        hideTypingIndicator(); // Hide the typing indicator
+    });
+}
 
 
     
@@ -345,16 +324,6 @@ document.addEventListener('DOMContentLoaded', function() {
     let selectedServiceId = null;
 
     function submitClientDetails() {
-        // Validation to check if all form fields are filled
-        if (!document.getElementById('client-name').value || 
-            !document.getElementById('client-number').value || 
-            !document.getElementById('client-address').value || 
-            !document.getElementById('client-postcode').value || 
-            !document.getElementById('client-description').value) {
-            displayBotMessage("Por favor complete todos los detalles antes de enviar.");
-            return;
-        }
-    
         const clientDetails = {
             name: document.getElementById('client-name').value,
             number: document.getElementById('client-number').value,
@@ -364,21 +333,28 @@ document.addEventListener('DOMContentLoaded', function() {
             serviceCategory: selectedServiceCategory
         };
     
-        // AJAX request to send data to server
-        $.ajax({
-            type: 'POST',
-            url: '/submit_client_details',
-            contentType: 'application/json',
-            data: JSON.stringify(clientDetails),
-            success: function(response) {
-                displayBotMessage(response.message);
-                removeClientDetailForm();
-                // Now, call fetchProfessional with both the postcode and selectedServiceId
-                fetchProfessional(clientDetails.postcode, selectedServiceId);
-            },
-            error: function() {
-                displayBotMessage("Lo sentimos, hubo un error al procesar tus datos.");
+        fetchProfessional(clientDetails.postcode, function(technician) {
+            if (technician) {
+                clientDetails.technicianName = technician.tecnico_nombre;
+                clientDetails.technicianPhone = technician.tecnico_telefono;
+            } else {
+                clientDetails.technicianName = 'Not available';
+                clientDetails.technicianPhone = 'Not available';
             }
+    
+            $.ajax({
+                type: 'POST',
+                url: '/submit_client_details',
+                contentType: 'application/json',
+                data: JSON.stringify(clientDetails),
+                success: function(response) {
+                    displayBotMessage(response.message);
+                    removeClientDetailForm();
+                },
+                error: function() {
+                    displayBotMessage("Sorry, there was an error processing your details.");
+                }
+            });
         });
     }
 
@@ -443,11 +419,11 @@ document.addEventListener('DOMContentLoaded', function() {
         messageWindow.scrollTop = messageWindow.scrollHeight;
     }
     function hideTypingIndicator() {
-        typingIndicatorContainer.style.display = 'none';
-        if (typingIndicatorContainer.parentNode === messageWindow) {
-            messageWindow.removeChild(typingIndicatorContainer);
-        }
+    const typingIndicator = document.getElementById('typing-indicator-container');
+    if (typingIndicator) {
+        typingIndicator.style.display = 'none';
     }
+}
     // At the end of chatbot.js
     displayServiceOptions(); // Call it manually to check if the dropdown appears
     
