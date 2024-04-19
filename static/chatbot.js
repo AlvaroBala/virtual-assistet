@@ -348,7 +348,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 contentType: 'application/json',
                 data: JSON.stringify(clientDetails),
                 success: function(response) {
-                    displayBotMessage(response.message);
+                    
                     removeClientDetailForm();
                 },
                 error: function() {
