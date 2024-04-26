@@ -273,11 +273,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     function addClientDetailInputs() {
         const inputFields = [
-            { id: 'name', labelText: 'Nombre' },
-            { id: 'number', labelText: 'Número' },
-            { id: 'address', labelText: 'Dirección' },
-            { id: 'postcode', labelText: 'Código Postal' }, // Added postcode field
-            { id: 'description', labelText: 'Descripción' }
+            { id: 'name', labelText: 'Nombre', required: true },
+            { id: 'number', labelText: 'Número', required: true },
+            { id: 'address', labelText: 'Dirección', required: true },
+            { id: 'postcode', labelText: 'Código Postal', required: true }, // Made postcode required
+            { id: 'description', labelText: 'Descripción', required: false }
         ];
         const inputContainer = document.createElement('div');
         inputContainer.id = 'client-detail-form';
@@ -324,35 +324,55 @@ document.addEventListener('DOMContentLoaded', function() {
     let selectedServiceId = null;
 
     function submitClientDetails() {
+        // Retrieve the form values
+        const name = document.getElementById('client-name').value;
+        const number = document.getElementById('client-number').value;
+        const address = document.getElementById('client-address').value;
+        const postcode = document.getElementById('client-postcode').value;
+        const description = document.getElementById('client-description').value;
+    
+        // Check if the required fields are filled out
+        if (!name || !number || !address || !postcode) {
+            // Display a bot message if required fields are missing
+            displayBotMessage("Por favor, complete todos los campos requeridos antes de enviar.");
+            return; // Stop the function from proceeding further
+        }
+    
+        // If all fields are valid, package the client details
         const clientDetails = {
-            name: document.getElementById('client-name').value,
-            number: document.getElementById('client-number').value,
-            address: document.getElementById('client-address').value,
-            postcode: document.getElementById('client-postcode').value,
-            description: document.getElementById('client-description').value,
-            serviceCategory: selectedServiceCategory
+            name: name,
+            number: number,
+            address: address,
+            postcode: postcode,
+            description: description,
+            serviceCategory: selectedServiceCategory // Make sure this variable is set correctly elsewhere in your code
         };
     
-        fetchProfessional(clientDetails.postcode, function(technician) {
+        // Proceed to fetch a professional with the given postcode
+        fetchProfessional(postcode, function(technician) {
             if (technician) {
+                // Assign technician details if a technician was found
                 clientDetails.technicianName = technician.tecnico_nombre;
                 clientDetails.technicianPhone = technician.tecnico_telefono;
             } else {
+                // Fallback if no technician was found
                 clientDetails.technicianName = 'Not available';
                 clientDetails.technicianPhone = 'Not available';
             }
     
+            // Send the client details to the server
             $.ajax({
                 type: 'POST',
                 url: '/submit_client_details',
                 contentType: 'application/json',
                 data: JSON.stringify(clientDetails),
                 success: function(response) {
-                    
+                    // Handle success - remove the form and display a confirmation message
                     removeClientDetailForm();
                 },
                 error: function() {
-                    displayBotMessage("Sorry, there was an error processing your details.");
+                    // Handle errors - display a message to the user
+                    displayBotMessage("Lo sentimos, hubo un error al procesar sus detalles.");
                 }
             });
         });
